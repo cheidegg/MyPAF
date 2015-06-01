@@ -1,0 +1,11 @@
+name      := lname                            := parent := nbins := min  := max := bins
+##----------------------------------------------------
+ElAbsEta  := |#eta|(lep)                      := lep    := 24    := 0    := 2.4 := [0, 1, 2, 2.5]
+LepEta    := #eta(lep)                        := lep    := 48    := -2.4 := 2.4 := []
+LepAbsEta := |#eta|(lep)                      := lep    := 24    := 0    := 2.4 := [0, 1, 2, 2.4]
+LepPhi    := #phi(lep)                        := lep    := 64    := -3.2 := 3.2 := []
+LepPt     := P_T(lep) [GeV]                   := lep    := 24    := 0    := 120 := [10, 15, 25, 35, 50, 70]
+LepPtJet  := P_T(jet closest to lep) [GeV]    := lep    := 0     := 0    := 0   := [10, 15, 25, 35, 50, 70]
+LepPtMIso := P_T(lep)*(1+(miniIso-cut)) [GeV] := lep    := 0     := 0    := 0   := [10, 15, 25, 35, 50, 70]
+LepSIP    := SIP3d(lep)                       := lep    := 10    := 0    := 10  := []
+MuAbsEta  := |#eta|(lep)                      := lep    := 24    := 0    := 2.4 := [0, 1, 2, 2.4]

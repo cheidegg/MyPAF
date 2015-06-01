@@ -1,0 +1,87 @@
+
+## workflow:
+## config file gives a list of variables to be computed
+## variables either of the event or of an object (dot . is the accessor)
+
+## tvars the class taking care of everything:
+## - input: old tree, new tree, variable definition, selections, current event
+## - init: loads old and new tree, builds objects out of variable definitions
+
+## init:
+## - search through the variable names and extract a list of objects to be built
+## - get also a list of variables to be built for every object + event
+
+## load:
+## - load the event of the old tree
+## - built an instance of every object for every instance in the vector of the old tree
+## - fill also every variable of tevent with the variables from the old tree
+## - 
+
+## computable variables:
+## - stored in the library file 'tfscalar', 'tfvector', 'tfkernel'
+## - input: branches (scalars or vectors) and variables of objects (scalars or vectors)
+## - selection: needs to refer to object variables
+## - every function 3 times: kernel (actual 1-1 method), scalar (scalar-scalar input), vector (vector input)
+## - e.g. min(mllSO(lep, "lep.isTight > 0"))
+## - e.g. min(mllDO(lep, MET, "lep.isTight > 0"))
+
+## or do it with vector::mll(lep)
+
+## object selections already in objects when loading and computing variables ? 
+## passing the selection is true/false => also variable to the object
+
+## selections must be with new variables!! not with branch names of old tree!!
+e.g. measurement region
+Lel := abs(lep.pdg) == 11 and lep.pt > 10 and abs(lep.eta) < 2.4 and lep.mvaTight and lep.tightCharge and mt(lep, met) < 20 
+Lmu := abs(lep.pdg) == 13 and lep.pt > 10 and abs(lep.eta) < 2.4 and lep.muIdMedium 
+aJ  := jet.pt > 40 and abs(jet.eta) < 2.4 and dR(jet, lep, "lep.sel_Lel or lep.sel_Lmu")
+MR  := num(lep, "lep.sel_Lel or lep.sel_Lmu") == 1 and num(jet, "jet.sel_aJ") >= 1 and met.pt < 20
+
+
+# event vars
+ht25 := vector::sum(jet.pt, "jet.pt > 25")
+ht40 := vector::sum(jet.pt, "jet.pt > 40")
+minMllOSSFTL := vector::min(vector::mll(obj, "obj1.ch == -obj2.ch and abs(obj1.pdg) == abs(obj2.pdg) and ((obj1.tight and not obj2.tight) or (not obj1.tight and obj2.tight))"))
+
+
+
+min(mllPairs(pairs(lep, lep, "obj1.ch == -obj2.ch and abs(obj1.pdg) == abs(obj2.pdg) and ((obj1.tight and not obj2.tight) or (not obj1.tight and obj2.tight))"))
+minMllSSSFTL := min(mllPairs(pairs(lep, lep, "obj1.ch == obj2.ch and abs(obj1.pdg) == abs(obj2.pdg) and ((obj1.tight and not obj2.tight) or (not obj1.tight and obj2.tight))"))
+#minMllOSSFTL := min(mllAll(subset(lep, "lep.ch == -lep.ch and abs(lep.pdg) == abs(lep.pdg) and ((lep1.tight and not lep2.tight) or (not lep1.tight and lep2.tight))"))
+#minMllSSSFTL := min(mllAll(lep1, lep2; "lep1.ch == lep2.ch and abs(lep1.pdg) == abs(lep2.pdg) and ((lep1.tight and not lep2.tight) or (not lep1.tight and lep2.tight))"))
+nlep := num(lep)
+njet := num(jet)
+
+# met vars
+met.pt := pfMET
+met.eta := 
+met.phi := pfMETphi
+
+# lepton vars
+lep.pt := LepGood_pt
+lep.eta := LepGood_eta
+lep.phi := LepGood_phi
+lep.pdg := LepGood_pdgId
+lep.ch := LepGood_charge 
+lep.mtMET := mtDO(self, met)
+lep.relIso := LepGood_pfRelIso03
+lep.miniIso := LepGood_
+lep.ptRel := LepGood_jetPtRel
+lep.dxy := LepGood_dxy
+lep.dz := LepGood_dz
+lep.sdxy :=
+lep.sdz :=
+lep.sip :=
+lep.ip :=
+lep.sietaieta := 
+
+
+
+# jet vars
+jet.pt :=
+jet.eta :=
+jet.phi :=
+jet.btag :=
+
+
+
