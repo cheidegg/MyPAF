@@ -41,7 +41,7 @@ class sample:
 		self.db    = mypaf.db
 		self.vb    = mypaf.vb
 
-		if path[0] != "/" and path.find("dcap") == -1: path = mypaf.inputpath + path
+		if path[0] != "/" and path.find("dcap://") == -1 and path.find("root://") == -1: path = mypaf.inputpath + path
 
 		self.name = name
 		self.path = path

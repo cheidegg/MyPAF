@@ -591,8 +591,9 @@ def usePath(mypafpath, headpath, filepath, argpath = ""):
 	if filepath[0] == "/": return filepath
 
 	## relative filepath and absolute headpath -> relative to headpath
-	if headpath[0] == "/": 
+	if headpath[0] == "/":
 		if headpath.find("psi.ch") != -1: headpath = "dcap://t3se01.psi.ch:22125/" + headpath
+		if headpath.find("eos/")   != -1: headpath = "root://cms-xrd-global.cern.ch/" + headpath
 		return headpath.rstrip("/") + "/" + filepath
 
 	## relative filepath and relative headpath -> all relative to mypaf input path
