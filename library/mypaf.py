@@ -10,7 +10,7 @@
 #################################################################
 
 import array, datetime, inspect, ROOT
-import cfg, clist, dbreader, input, lib, objcoll, output, rstuff, parser, vb
+import args, cfg, clist, dbreader, input, lib, objcoll, output, parser, rstuff, sample, vb
 
 
 ## mypaf
@@ -44,15 +44,15 @@ class mypaf:
 
 	## __init__
 	##---------------------------------------------------------------
-	def __init__(self, module, cfgfile):
+	def __init__(self, module, cfgfile, title = ""):
 
-		cfgfile     = cfgfile.strip()
+		self.title  = title.strip().lower()
 		self.module = module.strip()
 		self.setIModule()
 
 		self.vb     = vb.vb(self, 1) 
 		self.db     = dbreader.dbreader(self)
-		self.input  = input.input  (self, cfgfile)
+		self.input  = input.input  (self, cfgfile.strip())
 		self.cfg    = self.input.cfg
 
 		self.newProd()
@@ -100,7 +100,11 @@ class mypaf:
 	##---------------------------------------------------------------
 	def close(self):
 
-		lib.copyFile(self.input.cfg.path, self.prodpath)
+		lib.copyFile(self.input.cfg.path, self.prodpathmypaf)
+		for dbfpath in lib.getAllFiles(self.dbpath):
+			lib.copyFile(dbfpath, self.prodpathmypaf)
+
+		lib.writeFile(self.prodpathmypaf + "note.txt", "\n".join(self.prodInfo()))
 		lib.cleanDir(self.temppath)
 		self.vb.end()
 
@@ -121,6 +125,14 @@ class mypaf:
 		lib.makeDir(self.outputpath)
 		lib.makeDir(self.outputpath + self.module)
 		lib.makeDir(self.prodpath)
+		lib.makeDir(self.prodpathmypaf)
+
+		#alltypes = []
+		#for iobj in self.input.cfg.getObjs("region=='output'"):
+		#	alltypes = lib.addToVectorIfMissing(alltypes, iobj.type)
+
+		#for type in alltypes:
+		#	lib.makeDir(self.prodpath + lib.getOutputDirPerType(type))		
 
 
 	## divideCanv
@@ -192,28 +204,50 @@ class mypaf:
  		self.output.finalize()
 
 
-	## inputfile
+	## findScale
 	##---------------------------------------------------------------
-	def inputfile(self, headpath, inputpath):
-	        
-		if inputpath != "" and inputpath[0] == "/":
-			return inputpath
-		else:
-			if headpath != "" and headpath[0] == "/":
-				return headpath.rstrip("/") + "/" + inputpath
-			else:
-				return self.inputpath + headpath.rstrip("/") + "/" + inputpath
-		    
-		return inputpath
-        
+	def findScale(self, alist, source = ""):
 
-	## inputobject
+		norm = self.input.cfg.getVar("normalization")
+		source = lib.useVal(source, alist.get("source"))
+		if source != "":
+			lumi = float(self.input.cfg.getVar("luminosity"))
+			attr = self.db.getRow("samples", "name == '" + alist.get("source") + "'")
+			xsec = float(eval(attr[4]))
+			nevt = float(eval(attr[6]))
+
+			if xsec == 0.0   : return 1.0
+			if norm == "lumi": return lib.scaleLumi(lumi, xsec, nevt)			
+
+		return 1.0
+
+
+	## findSelections
 	##---------------------------------------------------------------
-	def inputobject(self, headobject, inputobject):
-	        
-		if inputobject != "": 
-			return inputobject
-		return headobject
+	def findSelections(self, types, alist):
+
+		tr = " or ".join(["type=='" + t + "'" for t in types])
+		if alist.has("sel"):
+			sels = alist.get("sel").split(",")
+			add = " or ".join(["name=='" + n + "'" for n in sels])
+			return self.input.cfg.getObjs("region=='selection' and (type=='none' or " + tr + ") and (" + add + ")")
+		return self.input.cfg.getObjs("region=='selection' and (type=='none' or " + tr + ")")
+
+
+	## prodInfo
+	##---------------------------------------------------------------
+	def prodInfo(self):
+
+		info = []
+		info.append("prod timestamp: " + self.prod) 
+		info.append("MyPAF version: " + lib.bash("git describe --abbrev=4 --dirty --always").rstrip("\n"))
+
+		if self.input.cfg.getVar("prodtitle") != "":	 
+			info.append("prodtitle: " + self.input.cfg.getVar("prodtitle"))
+		if self.input.cfg.getVar("description") != "":
+			info.append("description: " + self.input.cfg.getVar("description"))
+
+		return info
 
 
 	## restart
@@ -252,25 +286,34 @@ class mypaf:
 
 	## runDraw
 	##---------------------------------------------------------------
-	def runDraw(self):
+	def runDraw(self, objnames = []):
 
-		for i, sample in enumerate(self.input.samples):
+		objlist = self.input.cfg.getObjs("region=='output' and (type=='file' or type=='plot')")
+		if len(objnames) > 0:
+			objlist = lib.getElmAttrAllOr(objlist, "name", objnames)
 
-			sample.load()
-			t = sample.tree
+		##loop over samples
+		for i, sam in enumerate(self.input.cfg.getObjs("region=='input' and type=='tree'")):
 
-			sidx = i
-			if self.input.cfg.getVar("head", "dataset") == "y":
-				sidx = lib.findElmAttr(self.input.datasets, \
-				                       "name", \
-				                       self.db.getColumn("samples", "name=='" + sample.name + "'", "dataset"))
+			alist = args.args(sam.argstring)
+			samp  = sample.sample(self, sam.name, \
+			                            lib.usePath(self.inputpath, self.input.cfg.getVar("inputdir"), sam.definition, alist.get("dir")), \
+			                            lib.useVal("tree", self.input.cfg.getVar("inputtree"), alist.get("tree"))) 
+			samp.load()
+			t    = samp.tree
+			sidx = sam.source
 
-			for var in self.input.output:
-				for cidx, sel in enumerate(self.input.selection):
+			## loop over variables to plot
+			for j, var in enumerate(objlist):
 
-					dim  = self.output.objcoll.getHistDim(var[1])
-					bins = self.output.objcoll.getHistBins(var[1])
-					      
+				valist = args.args(var.argstring)
+
+				## loop over selection
+				for cidx, sel in enumerate(self.findSelections(["tree"], valist)):
+
+					dim  = self.output.objcoll.getHistDim (var.name)
+					bins = self.output.objcoll.getHistBins(var.name)
+
 					if   dim == 2: htemp = ROOT.TH2F("htemp", "htemp", len(bins[0].list)-1, array.array('d', bins[0].list), \
 					                                                   len(bins[1].list)-1, array.array('d', bins[1].list))
 					elif dim == 3: htemp = ROOT.TH3F("htemp", "htemp", len(bins[0].list)-1, array.array('d', bins[0].list), \
@@ -278,13 +321,48 @@ class mypaf:
 					                                                   len(bins[2].list)-1, array.array('d', bins[2].list))
 					else:          htemp = ROOT.TH1F("htemp", "htemp", len(bins[0].list)-1, array.array('d', bins[0].list))
 
-					t.Draw(var[2] + ">>htemp", sel[2])
-					#htemp.Print()
-					self.output.objcoll.injectHist(var[1], htemp, sidx, cidx)
-					htemp.Delete()
+					self.vb.talk("Drawing " + str(t.Draw(var.definition + ">>htemp", sel.definition)) + " entries into " + var.name + ".")
+					htemp.Scale(self.findScale(alist))
+					self.output.objcoll.injectHist(var.name, htemp, sidx, cidx)
+
+					htemp.Delete()	
 					del htemp
+			samp.close()
 
 		self.output.objcoll.setInitial()
+
+
+		#for i, sample in enumerate(self.input.samples):
+
+		#	sample.load()
+		#	t = sample.tree
+
+		#	sidx = i
+		#	if self.input.cfg.getVar("head", "dataset") == "y":
+		#		sidx = lib.findElmAttr(self.input.datasets, \
+		#		                       "name", \
+		#		                       self.db.getColumn("samples", "name=='" + sample.name + "'", "dataset"))
+
+		#	for var in self.input.output:
+		#		for cidx, sel in enumerate(self.input.selection):
+
+		#			dim  = self.output.objcoll.getHistDim(var[1])
+		#			bins = self.output.objcoll.getHistBins(var[1])
+		#			      
+		#			if   dim == 2: htemp = ROOT.TH2F("htemp", "htemp", len(bins[0].list)-1, array.array('d', bins[0].list), \
+		#			                                                   len(bins[1].list)-1, array.array('d', bins[1].list))
+		#			elif dim == 3: htemp = ROOT.TH3F("htemp", "htemp", len(bins[0].list)-1, array.array('d', bins[0].list), \
+		#			                                                   len(bins[1].list)-1, array.array('d', bins[1].list), \
+		#			                                                   len(bins[2].list)-1, array.array('d', bins[2].list))
+		#			else:          htemp = ROOT.TH1F("htemp", "htemp", len(bins[0].list)-1, array.array('d', bins[0].list))
+
+		#			t.Draw(var[2] + ">>htemp", sel[2])
+		#			#htemp.Print()
+		#			self.output.objcoll.injectHist(var[1], htemp, sidx, cidx)
+		#			htemp.Delete()
+		#			del htemp
+
+		#self.output.objcoll.setInitial()
 
 
 	## runHist
@@ -306,98 +384,165 @@ class mypaf:
 
 	## runPlot
 	##---------------------------------------------------------------
-	def runPlot(self):
+	def runPlot(self, objnames = []):
 
-		for var in self.input.output:
-			sdefs = var[2].split()
-			for sdef in sdefs:
-				htemp = parser.access(self, self.input.files, 1, sdef)	
+		objlist = self.input.cfg.getObjs("region=='output' and (type=='file' or type=='plot')")
+		if len(objnames) > 0:
+			objlist = lib.getElmAttrAllOr(objlist, "name", objnames)
+	
+		for j, var in enumerate(objlist):
+			alist = args.args(var.argstring)
+			for sdef in var.definition.split():
+				valist = args.args("source=" + sdef.split("::")[2])
+				htemp = parser.access(self, self.input.cfg.getObjs("region=='input' and (type=='file' or type=='root')"), sdef, alist.get("dir"), self.findScale(valist))
 				htemp = lib.setProperBinning(htemp)
-				htemp = lib.rebin(htemp, self.output.objcoll.getHistBins(var[1]))
-				self.output.objcoll.injectHist(var[1], htemp)
+				htemp = lib.rebin(htemp, self.output.objcoll.getHistBins(var.name))
+				self.output.objcoll.injectHist(var.name, htemp)
 				htemp.Delete()	
-				del htemp
+				del htemp, valist
 
 		self.output.objcoll.setInitial()
 
 
 	## runScan
 	##---------------------------------------------------------------
-	def runScan(self):
+	def runScan(self, objnames = []):
 
-		allvars = []
-		for var in self.input.output:
-			allvars.append(var[2])
+		tvrun  = lib.useVal("run" , self.input.cfg.getVar("treevarrun" ))
+		tvlumi = lib.useVal("lumi", self.input.cfg.getVar("treevarlumi"))
+		tvevt  = lib.useVal("evt" , self.input.cfg.getVar("treevarevt" ))
 
-		for i, sample in enumerate(self.input.samples):
+		objlist = self.input.cfg.getObjs("region=='output' and (type=='evlist' or type=='oblist')")
+		if len(objnames) > 0:
+			objlist = lib.getElmAttrAllOr(objlist, "name", objnames)
 
-			sample.load()
-			t = sample.tree
+		for i, sam in enumerate(self.input.cfg.getObjs("region=='input' and type=='tree'")):
 
-			sidx = i
-			if self.input.cfg.getVar("head", "dataset") == "y":
-				sidx = lib.findElmAttr(self.input.datasets, \
-				                       "name", \
-				                       self.db.getColumn("samples", "name=='" + sample.name + "'", "dataset"))
+			alist = args.args(sam.argstring)
+			samp  = sample.sample(self, sam.name, \
+			                            lib.usePath(self.inputpath, self.input.cfg.getVar("inputdir"), sam.definition, alist.get("dir")), \
+			                            lib.useVal("tree", self.input.cfg.getVar("inputtree"), alist.get("tree"))) 
+			samp.load()
+			t    = samp.tree
+			sidx = sam.source
 
-				
-			for cidx, sel in enumerate(self.input.selection):
-				t.GetPlayer().SetScanRedirect(True)
-				t.GetPlayer().SetScanFileName(self.temppath + "templist.txt")
-				self.objcoll.getEvList().injectScanFile(sidx, cidx, self.temppath + "templist.txt")
-				lib.rmFile(self.temppath + "templist.txt")
-				self.objcoll.getEvYield().inject(sidx, cidx, int(t.GetEntries(sel[2])))
+			t.GetPlayer().SetScanRedirect(True)
+			t.GetPlayer().SetScanFileName(self.temppath + "templist.txt")
+
+			for j, var in enumerate(objlist):
+				for cidx, sel in enumerate(self.input.cfg.getObjs("region=='selection' and (type=='none' or type=='tree')")):
+					num = t.Scan(tvrun + ":" + tvlumi + ":" + tvevt + ":" + var.definition, sel.definition) 
+					if   var.type == "evlist":
+						self.output.objcoll.getEvList (var.name).injectScanFile(sidx, cidx, self.temppath + "templist.txt")
+						self.output.objcoll.getEvYield(var.name).inject(sidx, cidx, int(num))
+					elif var.type == "oblist":
+						self.output.objcoll.getObList (var.name).injectScanFile(sidx, cidx, self.temppath + "templist.txt")
+						self.output.objcoll.getObYield(var.name).inject(sidx, cidx, int(num))
+					lib.rmFile(self.temppath + "templist.txt")
+			samp.close()
+
+		self.output.objcoll.setInitial()
+
+
+		#for i, sample in enumerate(self.input.samples):
+
+		#	sample.load()
+		#	t = sample.tree
+
+		#	sidx = i
+		#	if self.input.cfg.getVar("head", "dataset") == "y":
+		#		sidx = lib.findElmAttr(self.input.datasets, \
+		#		                       "name", \
+		#		                       self.db.getColumn("samples", "name=='" + sample.name + "'", "dataset"))
+
+		#		
+		#	for cidx, sel in enumerate(self.input.selection):
+		#		t.GetPlayer().SetScanRedirect(True)
+		#		t.GetPlayer().SetScanFileName(self.temppath + "templist.txt")
+		#		t.Scan(sel)
+		#		self.objcoll.getEvList().injectScanFile(sidx, cidx, self.temppath + "templist.txt")
+		#		lib.rmFile(self.temppath + "templist.txt")
+		#		self.objcoll.getEvYield().inject(sidx, cidx, int(t.GetEntries(sel[2])))
 
 
 	## runStat
 	##---------------------------------------------------------------
-	def runStat(self):
+	def runStat(self, objnames = []):
 
-		for i, sample in enumerate(self.input.samples):
+		objlist = self.input.cfg.getObjs("region=='output' and (type=='evyield' or type=='obyield')")
+		if len(objnames) > 0:
+			objlist = lib.getElmAttrAllOr(objlist, "name", objnames)
 
-			sample.load()
-			t = sample.tree
+		for i, sam in enumerate(self.input.cfg.getObjs("region=='input' and type=='tree'")):
 
-			sidx = i
-			if self.input.cfg.getVar("head", "dataset") == "y":
-				sidx = lib.findElmAttr(self.input.datasets, \
-				                       "name", \
-				                       self.db.getColumn("samples", "name=='" + sample.name + "'", "dataset"))
+			alist = args.args(sam.argstring)
+			samp  = sample.sample(self, sam.name, \
+			                            lib.usePath(self.inputpath, self.input.cfg.getVar("inputdir"), sam.definition, alist.get("dir")), \
+			                            lib.useVal("tree", self.input.cfg.getVar("inputtree"), alist.get("tree"))) 
+			samp.load()
+			t    = samp.tree
+			sidx = sam.source
 
-			for cidx, sel in enumerate(self.input.selection):
-				sels = parser.getSelSteps(sel[2])
-				for selection in sels:
-					self.objcoll.getEvYield().inject(sidx, cidx, int(t.GetEntries(sel[2])))
-				
-				nevts = int(t.GetEntries(sel[2]))
+			for j, var in enumerate(objlist):
+				for cidx, sel in enumerate(self.input.cfg.getObjs("region=='selection' and (type=='none' or type=='tree')")):
+
+					if   var.type == "evyield":
+						self.output.objcoll.getEvYield(var.name).inject(sidx, cidx, int(t.GetEntries(sel.definition)))
+					elif var.type == "obyield":
+						self.output.objcoll.getObYield(var.name).inject(sidx, cidx, int(t.GetEntries(sel.definition)))
+					#elif var.type == "effmap":
+					#	selsteps = lib.buildSelSteps(sel.definition)
+					#	self.output.objcoll.getEffMap(var.name).inject(sidx, cidx, [[ss, int(t.GetEntries(ss))] for ss in selsteps])
+					#elif var.type == "roc":
+
+			samp.close()
+
+		self.output.objcoll.setInitial()
+
+
+		#for i, sample in enumerate(self.input.samples):
+
+		#	sample.load()
+		#	t = sample.tree
+
+		#	sidx = i
+		#	if self.input.cfg.getVar("head", "dataset") == "y":
+		#		sidx = lib.findElmAttr(self.input.datasets, \
+		#		                       "name", \
+		#		                       self.db.getColumn("samples", "name=='" + sample.name + "'", "dataset"))
+
+		#	for cidx, sel in enumerate(self.input.selection):
+		#		sels = parser.getSelSteps(sel[2])
+		#		for selection in sels:
+		#			self.objcoll.getEvYield().inject(sidx, cidx, int(t.GetEntries(sel[2])))
+		#		
+		#		nevts = int(t.GetEntries(sel[2]))
+
+
 
 
 	## runTier2Modules
 	##---------------------------------------------------------------
-	def runTier2Modules(self, modulelist):
+	def runTier2Modules(self, modulelist, objlist = []):
 
 		for module in modulelist:
 			if module == "draw":
-				self.input.buildDraw()
-				self.output.buildDraw()
-				self.runDraw()
+				self.output.buildDraw(objlist)
+				self.runDraw(objlist)
 			elif module == "plot":
-				self.input.buildPlot()
-				self.output.buildPlot()
-				self.runPlot()
+				self.output.buildPlot(objlist)
+				self.runPlot(objlist)
 			elif module == "scan":
-				self.input.buildScan()
-				self.output.buildScan()
-				self.runScan()
+				self.output.buildScan(objlist)
+				self.runScan(objlist)
 			elif module == "stat":
-				self.input.buildStat()
-				self.output.buildStat()
-				self.runStat()
+				self.output.buildStat(objlist)
+				self.runStat(objlist)
 
 
 	## runTree
 	##---------------------------------------------------------------
-	def runTree(self):
+	def runTree(self, direct = False):
 		## implements the tier1 module "tree"
 		## event-by-event loop over tree
 		## compute variables and write them to the tree
@@ -405,23 +550,31 @@ class mypaf:
 		## also writes a skimmed tree for every selection
 
 
-		tv = tvars.tvars(self, lib.column(self.input.output, 1), lib.column(self.input.output, 2), lib.column(self.input.selection,3))
 
-		## read tree, fill objects, apply selection and write to new tree
-		for i, sample in enumerate(self.input.samples):
+
+		## ATTENTION: need to only loop over EVENT SELECTIONS, and pass the object selections to the tvars instance!
+
+		tv = tvars.tvars(self, self.input.cfg.getObjs("region=='output' and type=='tree'"))
+
+		for i, sam in enumerate(self.input.cfg.getObjs("region=='input' and type=='tree'")):
+
+			alist = args.args(sam.argstring)
+			sample = sample.sample(self, sam.name, \
+			                             lib.usePath(self.inputpath, self.input.cfg.getVar("inputdir"), sam.definition, alist.get("dir")), \
+			                             lib.useVal("tree", self.input.cfg.getVar("inputtree"), alist.get("tree"))) 
 			sample.load()
-			t = sample.tree
+			t    = sample.tree
 			tv.setOldTree(t)
-			
-			for j, sel in enumerate(self.input.selection):
 
-				nt = self.output.openTree(sample.name + "_tree", sample.name + "_" + sel[1])
+			for cidx, sel in enumerate(self.input.cfg.getObjs("region=='selection' and (type=='none' or type=='tree')")):
+
+				nt = self.output.openTree(sample.name + "_tree", sample.name + "_" + sel.name)
 				tv.setNewTree(nt)
 
 				for evt in t:
 
 					tv.load(evt)
-					tv.applySelection(j)
+					tv.applySelection(sel.definition)
 					tv.write()
 
 			self.output.file.Write()		
@@ -429,6 +582,34 @@ class mypaf:
 			sample.close()
 
 		tv.close()
+
+
+
+		#tv = tvars.tvars(self, lib.column(self.input.output, 1), lib.column(self.input.output, 2), lib.column(self.input.selection,3))
+
+		### read tree, fill objects, apply selection and write to new tree
+		#for i, sample in enumerate(self.input.samples):
+		#	sample.load()
+		#	t = sample.tree
+		#	tv.setOldTree(t)
+		#	
+		#	for j, sel in enumerate(self.input.selection):
+
+		#		nt = self.output.openTree(sample.name + "_tree", sample.name + "_" + sel[1])
+		#		tv.setNewTree(nt)
+
+		#		for evt in t:
+
+		#			tv.load(evt)
+		#			tv.applySelection(j)
+		#			tv.write()
+
+		#	self.output.file.Write()		
+		#	tv.closeTrees()	
+		#	sample.close()
+
+		#tv.close()
+
 
 
 	## save
@@ -479,11 +660,14 @@ class mypaf:
 		## normal mode
 		self.prod     = lib.getTimeStamp()
 
+		if self.title != "":
+			self.prod += "_" + self.title
+
 		## test mode
 		if self.input.cfg.getVar("mode") == "test":
 			self.prod = "test"
 			lib.cleanDir(self.outputpath + self.module + "/" + self.prod)
 
 		self.prodpath = self.outputpath + self.module + "/" + self.prod + "/"
-
+		self.prodpathmypaf = self.prodpath + "mypaf/"
 

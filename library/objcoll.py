@@ -10,7 +10,7 @@
 #################################################################
 
 #import effmap, evlist, evyield, hist, lib, oblist, obyield, roc
-import evlist, hist, lib, oblist
+import evlist, evyield, hist, lib, oblist, obyield
 
 
 ## objcoll
@@ -40,9 +40,23 @@ class objcoll:
 
 	## addEffMap
 	##---------------------------------------------------------------
-	def addEffMap(self, name):
+	def addEffMap(self, name, definition, argstring = ""):
 
-		self.effmaps.append(effmap.effmap(self.mypaf, name))
+		self.effmaps.append(effmap.effmap(self.mypaf, name, definition, argstring))
+
+
+	## addEvList
+	##---------------------------------------------------------------
+	def addEvList(self, name, variables, argstring = ""):
+
+		self.evlists.append(evlist.evlist(self.mypaf, name, variables, argstring))
+
+
+	## addEvYield
+	##---------------------------------------------------------------
+	def addEvYield(self, name, variable, argstring = ""):
+
+		self.evyields.append(evyield.evyield(self.mypaf, name, variable, argstring))
 
 
 	## addHist
@@ -57,37 +71,81 @@ class objcoll:
 			self.categories = categories
 
 
-
-	## addHistSC
+	## addObList
 	##---------------------------------------------------------------
-	def addHistSC(self, var, binargs, labels, arglist, source, categories):
-	
-		self.hists     .append(hist.hist(self.mypaf, var, binargs, labels, argstring))
-		self.hists[-1].build([source], categories)
-		self.sources   .append(source)
-		self.categories = categories
+	def addObList(self, objname, name, variables, argstring = ""):
+
+		self.oblists.append(oblist.oblist(self.mypaf, objname, name, variables, argstring))
+
+
+	## addObYield
+	##---------------------------------------------------------------
+	def addObYield(self, objname, name, variable, argstring = ""):
+
+		self.obyields.append(obyield.obyield(self.mypaf, objname, name, variable, argstring))
 
 
 	## build
 	##---------------------------------------------------------------
 	def build(self):
 
+		self.buildEvLists()
+		self.buildEvYields()
 		self.buildHists()
+		self.buildObLists()
+		self.buildObYields()
+
+
+	## buildEvLists
+	##---------------------------------------------------------------
+	def buildEvLists(self):
+
+		if not all([e.built for e in self.evlists]):
+			for e in self.evlists:
+				e.build(self.sources, self.categories)
+
+
+	## buildEvYields
+	##---------------------------------------------------------------
+	def buildEvYields(self):
+
+		if not all([e.built for e in self.evyields]):
+			for e in self.evyields:
+				e.build(self.sources, self.categories)
 
 
 	## buildHists
 	##---------------------------------------------------------------
 	def buildHists(self):
 
-		if not all([h.isBuilt() for h in self.hists]):
+		if not all([h.built for h in self.hists]):
 			for h in self.hists:
 				h.build(self.sources, self.categories)
+
+
+	## buildObLists
+	##---------------------------------------------------------------
+	def buildObLists(self):
+
+		if not all([o.built for o in self.oblists]):
+			for o in self.oblists:
+				o.build(self.sources, self.categories)
+
+
+	## buildObYields
+	##---------------------------------------------------------------
+	def buildObYields(self):
+
+		if not all([o.built for o in self.obyields]):
+			for o in self.obyields:
+				o.build(self.sources, self.categories)
 
 
 	## draw
 	##---------------------------------------------------------------
 	def draw(self):
 
+		#if self.mypaf.imodule > 5: return
 		self.drawHists()
 
 
@@ -99,36 +157,72 @@ class objcoll:
 			h.draw()
 
 
-	## getHistBins
+	## getEvList
 	##---------------------------------------------------------------
-	def getHistBins(self, var):
+	def getEvList(self, name):
 
-		idx = lib.findElmAttr(self.hists, "var", var)
-		return self.hists[idx].getBins()
+		return lib.getObj(self.evlists, name)
 
 
-	## getHistDim
+	## getEvYield
 	##---------------------------------------------------------------
-	def getHistDim(self, var):
+	def getEvYield(self, name):
 
-		idx = lib.findElmAttr(self.hists, "var", var)
-		return self.hists[idx].getDim()
+		return lib.getObj(self.evyields, name)
 
 
 	## getHist
 	##---------------------------------------------------------------
-	def getHist(self, var):
+	def getHist(self, name):
 
-		idx = lib.findElmAttr(self.hists, "var", var)
-		return self.hists[idx]
+		return lib.getObj(self.hists, name)
+
+
+	## getHistBins
+	##---------------------------------------------------------------
+	def getHistBins(self, name):
+
+		return lib.getObj(self.hists, name).getBins()
+
+
+	## getHistDim
+	##---------------------------------------------------------------
+	def getHistDim(self, name):
+
+		return lib.getObj(self.hists, name).getDim()
+
+
+	## getObList
+	##---------------------------------------------------------------
+	def getObList(self, name):
+
+		return lib.getObj(self.oblists, name)
+
+
+	## getObYield
+	##---------------------------------------------------------------
+	def getObYield(self, name):
+
+		return lib.getObj(self.obyields, name)
 
 
 	## injectHist
 	##---------------------------------------------------------------
-	def injectHist(self, var, hist, sidx = 0, cidx = 0):
+	def injectHist(self, name, hist, sidx = 0, cidx = 0):
 
-		idx = lib.findElmAttr(self.hists, "var", var)
-		self.hists[idx].inject(hist, sidx, cidx)
+		return lib.getObj(self.hists, name).inject(hist, sidx, cidx)
+
+
+	## setCategs
+	##---------------------------------------------------------------
+	def setCategs(self, categs):
+		self.categories = categs
+
+
+	## setHistP
+	##---------------------------------------------------------------
+	def setHistP(self, name):
+		lib.getObj(self.hists, name).setP(True)
 
 
 	## setInitial
@@ -139,12 +233,10 @@ class objcoll:
 			h.setInitial()
 
 
-	## setHistP
+	## setSources
 	##---------------------------------------------------------------
-	def setHistP(self, name):
-
-		idx = lib.findElmAttr(self.hists, "var", name)
-		self.hists[idx].setP(True)
+	def setSources(self, sources):
+		self.sources = sources
 
 
 

@@ -19,7 +19,7 @@ class oblist:
 
 	## __init__
 	##---------------------------------------------------------------
-	def __init__(self, mypaf, obj, name, variables):
+	def __init__(self, mypaf, obj, name, variables, argstring = ""):
 
 		self.mypaf     = mypaf
 		self.db        = mypaf.db
@@ -27,8 +27,10 @@ class oblist:
 
 		self.obj       = obj.strip()
 		self.name      = name.strip()
+		self.alist     = args.args(argstring)
 		self.vars      = ["Row", "Instance"]
 		self.vars.extend(variables)
+		self.built     = False
 
 
 	## addEntry
@@ -47,8 +49,9 @@ class oblist:
 		self.sources = sources
 		self.categs  = categs
 
-		self.paths   = [[mypaf.temppath + "oblist_" + name + "_" + str(sidx) + "_" + str(cidx) + ".txt" for sidx in range(len(sources))] for cidx in range(len(categs))]
+		self.paths   = [[self.mypaf.temppath + "oblist_" + self.name + "_" + str(sidx) + "_" + str(cidx) + ".txt" for sidx in range(len(sources))] for cidx in range(len(categs))]
 		self.files   = [[open(self.paths[sidx][cidx], "a") for sidx in range(len(sources))] for cidx in range(len(categs))]
+		self.built   = True
 
 
 	## close

@@ -72,10 +72,10 @@ class source:
 		self.dstype      = vars[3]
 		self.cgroup      = vars[4]
 		self.color       = vars[5]
-		self.fillstyle   = vars[6]
-		self.linestyle   = vars[7]
-		self.linewidth   = vars[8]
-		self.markerstyle = vars[9]
-		self.markersize  = vars[10]
+		self.fillstyle   = int(vars[6])
+		self.linestyle   = int(vars[7])
+		self.linewidth   = int(vars[8])
+		self.markerstyle = int(vars[9])
+		self.markersize  = float(vars[10])
 
 

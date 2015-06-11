@@ -21,16 +21,15 @@ class tvars:
 
 	## __init__
 	##---------------------------------------------------------------
-	def __init__(self, mypaf,  vnames, vdefs, vsels, vargs = ""):
+	def __init__(self, mypaf, oobjs):
 
 		self.mypaf = mypaf
 		self.db    = mypaf.db
 		self.vb    = mypaf.vb
 
-		self.vars = vnames
-		self.defs = vdefs
-		self.sels = vsels
-		self.args = vargs
+		self.vars = [obj.name for obj in oobjs]
+		self.defs = [obj.definition for obj in oobjs]
+		self.args = [obj.argstring for obj in oobjs]
 
 		self.tevt = None
 		self.prepareObjects()
@@ -40,12 +39,12 @@ class tvars:
 		
 	## applySelection
 	##---------------------------------------------------------------
-	def applySelection(self, idx):
+	def applySelection(self, selection):
 
 		if self.event == None: return 
 		if selection  == ""  : return 
 
-		self.event.applySelection(self.sels[idx])
+		self.event.applySelection(selection)#self.sels[idx])
 
 
 	## close

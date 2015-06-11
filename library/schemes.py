@@ -137,16 +137,19 @@ def comp(name, schemes, alist):
 
 			alist.set("draw1mode", "pe")
 			alist.set("color"    , ROOT.kBlack)
+			alist.setArgs(alist.allStrip("1"))
+
 			hline[0].alist.reinit(alist)
-			hline[0].prepareDraw()
+			hline[0].prepareDraw(0)
 			hline[0].getH(d[i][j][0], d[i][j][1]).SetFillStyle(0)
-			hline[0].getH(d[i][j][0], d[i][j][1]).SetLineStyle(1)
+			#hline[0].getH(d[i][j][0], d[i][j][1]).SetLineStyle(1)
 			hline[0].getH(d[i][j][0], d[i][j][1]).GetXaxis().SetLabelSize(0)
 			hline[0].drawH(d[i][j][0], d[i][j][1], "", True)
 			for k in range(1,len(hline)):
-				hline[k].prepareDraw()
+				hline[k].alist.resetArgs(alist.allStrip(str(k+1)))
+				hline[k].prepareDraw(0)
 				hline[k].getH(d[i][j][0], d[i][j][1]).SetFillStyle(0)
-				hline[k].getH(d[i][j][0], d[i][j][1]).SetLineStyle(1)
+				#hline[k].getH(d[i][j][0], d[i][j][1]).SetLineStyle(1)
 				hline[k].getH(d[i][j][0], d[i][j][1]).GetXaxis().SetLabelSize(0)
 				hline[k].drawH(d[i][j][0], d[i][j][1], "same", True)
 

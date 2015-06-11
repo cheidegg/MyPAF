@@ -17,24 +17,24 @@ import args, clist, dbreader, objcoll, hscheme, lib, mypaf, vb
 ##------------------------------------------------------------------- 
 class output:
 
-	cfg        = None
-	db         = None
-	input      = None
-	mypaf      = None
-	vb         = None
+	#cfg        = None
+	#db         = None
+	#input      = None
+	#mypaf      = None
+	#vb         = None
 
-	treefiles  = None
-	treecoll   = None
+	#treefiles  = None
+	#treecoll   = None
 
 	#histcoll   = None
-	histfile   = None
+	#histfile   = None
 
-	file       = None	
-	evlist     = None
-	oblist     = None
-	evyields   = None
-	obyields   = None
-	efficiency = None
+	#file       = None	
+	#evlist     = None
+	#oblist     = None
+	#evyields   = None
+	#obyields   = None
+	#efficiency = None
 
 
 	## __init__
@@ -46,6 +46,7 @@ class output:
 		self.db       = mypaf.db
 		self.input    = mypaf.input
 		self.vb       = mypaf.vb	
+		self.file     = None
 
 		self.objcoll  = objcoll.objcoll(self.mypaf)
 		self.build()
@@ -68,33 +69,34 @@ class output:
 
 	## buildDraw
 	##---------------------------------------------------------------
-	def buildDraw(self):
+	def buildDraw(self, objnames = []):
 
 		self.openFile()
 
 		## initialize the histogram collection
-		if self.mypaf.input.cfg.getVar("dataset") == "y":
-			sources = lib.attr(self.mypaf.input.datasets, "name")
-		else:
-			sources = lib.attr(self.mypaf.input.samples, "name")
-		categories = lib.column(self.mypaf.input.selection, 1)
-		self.objcoll.setSources(sources)
-		self.objcoll.setCategs(categories)
+		#self.objcoll.setSources(self.mypaf.input.sources)
+		#self.objcoll.setCategs([o.name for o in self.mypaf.input.cfg.getObjs("region=='selection' and (type=='none' or type=='tree')")])
+
+		objlist = self.mypaf.input.cfg.getObjs("region=='output' and (type=='file' or type=='plot')")
+		if len(objnames) > 0:
+			objlist = lib.getElmAttrAllOr(objlist, "name", objnames)
 
 		## get the histogram info and initialize the histograms
-		for entry in self.mypaf.input.output:
-			if entry[0] == "plot" or entry[0] == "root":
-				alist = args.args(entry[3])
-				if not alist.has("obs"):
-					self.vb.warning("observable is not given for plot. plot ignored.")
-				else:
-					binargs, names = lib.prepareHistInfo(self.db, alist)
-					self.objcoll.addHist(entry[1], binargs, names, entry[3])
-					if entry[0] == "plot": self.objcoll.setHistP(entry[1])
+		for var in objlist:
+			alist = args.args(var.argstring)
+			if not alist.has("obs") and not alist.has("obsx"):
+				self.vb.warning("observable is not given for plot. plot ignored.")
+				continue
+			
+			categories = [o.name for o in self.mypaf.findSelections(["tree"], alist)]
+
+			binargs, labels = lib.prepareHistInfo(self.db, alist)
+
+			self.objcoll.addHist(var.name, binargs, labels, var.argstring, self.mypaf.input.sources, categories)
+			if var.type == "plot": self.objcoll.setHistP(var.name)
 
 
 		## build the histogram collection
-		#self.histcoll.build()
 		self.objcoll.build()
 
 
@@ -102,7 +104,7 @@ class output:
 	##---------------------------------------------------------------
 	def buildHist(self):
 
-		self.mypaf.runTier2Modules(self.mypaf.input.modules)
+		self.mypaf.runTier2Modules(self.mypaf.input.modules, self.mypaf.input.objects)
 
 		## initialize also every histogram produced before as a (trivial)scheme
 		self.schemes = []
@@ -110,7 +112,7 @@ class output:
 		## trivial schemes
 		if hasattr(self, "objcoll") and self.objcoll != None:
 			for h in self.objcoll.hists:
-				self.schemes.append(hscheme.hscheme(self.mypaf, "hist", h.var))
+				self.schemes.append(hscheme.hscheme(self.mypaf, "hist", h.name))
 				self.schemes[-1].setTrivial(h)
 			for evl in self.objcoll.evlists:
 				self.schemes.append(hscheme.hscheme(self.mypaf, "elhist", evl.name))
@@ -126,78 +128,93 @@ class output:
 				self.schemes[-1].setTrivial(oby)	
 	
 		## non-trivial schemes
-		self.sdefs = self.mypaf.input.cfg.getAll("schemes")
-		for entry in self.sdefs:
-			self.schemes.append(hscheme.hscheme(self.mypaf, entry[0], entry[1], entry[2], entry[3]))
+		#self.sdefs = self.mypaf.input.cfg.getAll("schemes")
+		for s in self.mypaf.input.cfg.getObjs("region=='schemes'"):
+			self.schemes.append(hscheme.hscheme(self.mypaf, s.type, s.name, s.definition, s.argstring))
 
 
 	## buildPlot
 	##---------------------------------------------------------------
-	def buildPlot(self):
-
-		## actually, what we want to do is different than in the DRAW case
-		## DRAW: take samples * selection * observables => hists for all cases
-		## PLOT: take hists * selection => hists
-		## do we need the histcoll? 
-
-		## todo:
-		## - sketch workflow:
-		##   + input file (no further specification)
-		##   + selection does selection on the bins, manipulates this histogram
-		##   + output is plot or root, i.e. a list of histograms
-		##   + output hist in canvas or larger file, specify path
-		##   + need to say which dataset, group, gengroup this is to be used
-		##   + need to specify binning, style
+	def buildPlot(self, objnames = []):
 
 		self.openFile()
 
+		objlist = self.mypaf.input.cfg.getObjs("region=='output' and (type=='file' or type=='plot')")
+		if len(objnames) > 0:
+			objlist = lib.getElmAttrAllOr(objlist, "name", objnames)
+
 		## reserve hist with one source per hist
-		for entry in self.mypaf.input.output:
-			if entry[0] == "plot" or entry[0] == "file":
-				alist = args.args(entry[3])
-				if not alist.has("obs") and not alist.has("obs1"):
-					self.vb.warning("observable is not given for plot. plot ignored.")
-				else:
-					## actually, find the selection which has the good name?
-					categories = lib.column(self.mypaf.input.selection, 1)
-					source = alist.get("source")
-					binargs, names = lib.prepareHistInfo(self.db, alist)
-					self.objcoll.addHist(entry[1], binargs, names, entry[3], [source], categories)
-					if entry[0] == "plot": 
-						self.objcoll.setHistP(entry[1]) 
+		for var in objlist:
+			alist = args.args(var.argstring)
+			if not alist.has("obs") and not alist.has("obsx"):
+				self.vb.warning("observable is not given for plot. plot ignored.")
+				continue
+
+			## actually, find the selection which has the good name?
+			categories = [o.name for o in self.mypaf.findSelections(["tree"], alist)]
+			source = alist.get("source")
+			binargs, names = lib.prepareHistInfo(self.db, alist)
+			self.objcoll.addHist(var.name, binargs, names, var.argstring, [source], categories)
+			if var.type == "plot": self.objcoll.setHistP(var.name) 
+			del alist
 
 	## WHAT TO DO ABOUT GEN INFO?
 
 
 	## buildScan
 	##---------------------------------------------------------------
-	def buildScan(self):
+	def buildScan(self, objnames = []):
 		
-		if self.mypaf.input.cfg.getVar("dataset") == "y":
-			sources = lib.attr(self.mypaf.input.datasets, "name")
-		else:
-			sources = lib.attr(self.mypaf.input.samples, "name")
-		categories = lib.column(self.mypaf.input.selection, 1)
-		self.objcoll.setSources(sources)
-		self.objcoll.setCategs(categories)
+		## initialize the histogram collection
+		self.objcoll.setSources(self.mypaf.input.sources)
+		self.objcoll.setCategs([o.name for o in self.mypaf.input.cfg.getObjs("region=='selection' and (type=='none' or type=='tree')")])
 
-		#for entry in self.mypaf.input.output:
-		#	if entry[0] == "evlist" or entry[0] == "oblist":
-				
+		objlist = self.mypaf.input.cfg.getObjs("region=='output' and (type=='evlist' or type=='oblist')")
+		if len(objnames) > 0:
+			objlist = lib.getElmAttrAllOr(objlist, "name", objnames)
+
+		for var in objlist:
+			alist = args.args(var.argstring)
+			if var.type == "oblist" and not alist.has("obj"):
+				self.vb.warning("object is not given for object list. list ignored.")
+				continue
+			if var.type == "evlist":
+				self.objcoll.addEvList(var.name, var.definition.split(":"), var.argstring)
+				self.objcoll.addEvYield(var.name, var.definition.split(":")[0], var.argstring)
+			elif var.type == "oblist":
+				self.objcoll.addObList(alist.get("obj"), var.name, var.definition.split(":"), var.argstring)
+				self.objcoll.addObYield(alist.get("obj"), var.name, var.definition.split(":")[0], var.argstring)
+			del alist
+		self.objcoll.build()
 
 
 	## buildStat
 	##---------------------------------------------------------------
-	def buildStat(self):
+	def buildStat(self, objnames = []):
 		
-		if self.mypaf.input.cfg.getVar("dataset") == "y":
-			sources = lib.attr(self.mypaf.input.datasets, "name")
-		else:
-			sources = lib.attr(self.mypaf.input.samples, "name")
-		categories = lib.column(self.mypaf.input.selection, 1)
-		self.objcoll.setSources(sources)
-		self.objcoll.setCategs(categories)
-		
+		## initialize the histogram collection
+		self.objcoll.setSources(self.mypaf.input.sources)
+		self.objcoll.setCategs([o.name for o in self.mypaf.input.cfg.getObjs("region=='selection' and (type=='none' or type=='tree')")])
+
+		objlist = self.mypaf.input.cfg.getObjs("region=='output' and (type=='evyield' or type=='obyield')")
+		if len(objnames) > 0:
+			objlist = lib.getElmAttrAllOr(objlist, "name", objnames)
+
+		for var in objlist:
+			alist = args.args(var.argstring)
+			if var.type == "obyield" and not alist.has("obj"):
+				self.vb.warning("object is not given for object yield. yield ignored.")
+				continue
+			if var.type == "evyield":
+				self.objcoll.addEvYield(var.name, var.definition.split(":")[0], var.argstring)
+			elif var.type == "obyield":
+				self.objcoll.addObYield(alist.get("obj"), var.name, var.definition.split(":")[0], var.argstring)
+			#elif var.type == "effmap":
+			#	self.objcoll.addEffMap(var.name, var.definition, var.argstring)
+			#elif var.type == "roc":
+			#	self.objcoll.addRoc(var.name, var.definition, var.argstring)
+			del alist
+		self.objcoll.build()
 
 
 	## buildTree
@@ -212,43 +229,7 @@ class output:
 	##---------------------------------------------------------------
 	def finalize(self):
 
-		if   self.mypaf.imodule == 1: return self.finalizeTree()
-		elif self.mypaf.imodule == 2: return self.finalizeDraw()
-		elif self.mypaf.imodule == 3: return self.finalizePlot()
-		elif self.mypaf.imodule == 4: return self.finalizeScan()
-		elif self.mypaf.imodule == 5: return self.finalizeStat()
-		elif self.mypaf.imodule == 6: return self.finalizeHist()
-		elif self.mypaf.imodule == 7: return self.finalizePubl()
-		
-		return False
-
-
-	## finalizeDraw
-	##---------------------------------------------------------------
-	def finalizeDraw(self):
-		## draw and save the histograms
-
 		self.objcoll.draw()
-
-
-	## finalizeHist
-	##---------------------------------------------------------------
-	def finalizeHist(self):
-		print "nothing to do"
-
-
-	## finalizePlot
-	##---------------------------------------------------------------
-	def finalizePlot(self):
-		## draw and save the histograms
-
-		self.objcoll.draw()
-
-
-	## finalizeScan
-	##---------------------------------------------------------------
-	def finalizeScan(self):
-		print "nothing to do"
 
 
 	## openFile

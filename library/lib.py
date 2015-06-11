@@ -9,7 +9,7 @@
 #################################################################
 #################################################################
 
-import array, copy, datetime, os, ROOT
+import array, copy, datetime, os, ROOT, subprocess
 import clist
 
 
@@ -28,8 +28,8 @@ def addToVectorIfMissing(vector, element):
 ##---------------------------------------------------------------
 def argsWin(default, sysval, argval):
 
-	if   argval != "": return setDType(getDType(default), argval) 
-	elif sysval != "": return setDType(getDType(default), sysval)
+	if   str(argval) != "": return setDType(getDType(default), argval) 
+	elif str(sysval) != "": return setDType(getDType(default), sysval)
 	
 	return default
 
@@ -52,6 +52,14 @@ def attr(vector, attribute):
 		result.append(getattr(entry, attribute))
 
 	return result
+
+
+## bash
+##---------------------------------------------------------------
+def bash(cmd):
+
+	pipe = subprocess.Popen(cmd, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+	return pipe.stdout.read()
 
 
 ## bins
@@ -102,7 +110,7 @@ def column(matrix, column):
 ##---------------------------------------------------------------
 def combine(objlist1, objlist2, selection = ""):
 
-	if selection == "": return [[o1, o2] if not o1 is o2 for o1 in objlist1 for o2 in objlist2]
+	if selection == "": return [[o1, o2] for o1 in objlist1 for o2 in objlist2 if not o1 is o2]
 	if objname   != "": selection = selection.replace(objname, "obj")
 
 	pairs = []
@@ -128,6 +136,24 @@ def copyFile(location, destination, cpcmd = "cp"):
 def copyHStyle(hdest, hloc):
 
 	return hdest
+
+
+## dump
+##---------------------------------------------------------------
+def dump(name, value):
+	print name + "=" + str(value)
+
+
+## findDatasetCfg
+##---------------------------------------------------------------
+def findDatasetCfg(samplecfg):
+
+	dsnames = []
+	for s in samplecfg:
+		dsname = self.db.getVar("samples", s.name, "dataset")
+		dsnames = addToVectorIfMissing(dsnames, dsname)
+
+	return dsnames	
 
 
 ## findElm
@@ -171,6 +197,8 @@ def findElmAttr(list, attribute, value):
 ## findElmAttrAll
 ##---------------------------------------------------------------
 def findElmAttrAll(list, attribute, value):
+	## returns a vector of elements in list whose attribute
+	## is equal to value
 
 	result = []
 	for i, elm in enumerate(list):
@@ -178,6 +206,13 @@ def findElmAttrAll(list, attribute, value):
 		if attr == value:
 			result.append(i)
 	return result
+
+
+## getAllFiles
+##---------------------------------------------------------------
+def getAllFiles(path):
+
+	return [path + f for f in os.listdir(path) if os.path.isfile(path + f)]
 
 
 ## getDType
@@ -189,6 +224,20 @@ def getDType(variable):
 	elif type(variable) is str  : return "str"
 
 	return "undef"
+
+
+## getElmAttrAllOr
+##---------------------------------------------------------------
+def getElmAttrAllOr(list, attribute, values):
+	## returns a vector of elements in list whose attribute
+	## is in a given collection
+
+	result = []
+	for i, elm in enumerate(list):
+		attr = getattr(elm, attribute)
+		if attr in values:
+			result.append(elm)
+	return result
 
 
 ## getElmVar
@@ -241,6 +290,15 @@ def getHistMinMax(hmin, hmax, logscale = False):
 	return nmin, nmax
 
 
+## getObj
+##---------------------------------------------------------------
+def getObj(objlist, objname):
+
+	idx = findElmAttr(objlist, "name", objname)
+	if idx == -1: return None
+	return objlist[idx]
+
+
 ## getPadSize
 ##---------------------------------------------------------------
 def getPadSize(pad):
@@ -291,7 +349,7 @@ def makeTDir(tfile, tdir):
 ##---------------------------------------------------------------
 def pairs(objlist, selection = "", objname = ""):
 
-	if selection == "": return [[o1, o2] if not o1 is o2 for o1 in objlist for o2 in objlist]
+	if selection == "": return [[o1, o2] for o1 in objlist for o2 in objlist if not o1 is o2]
 	if objname   != "": selection = selection.replace(objname, "obj")
 
 	pairs = []
@@ -313,9 +371,9 @@ def prepareHistInfo(db, alist):
 	names   = []
 	
 	## 1d histogram
-	if alist.has("obs") or (alist.has("obs1") and not alist.has("obs2")):
+	if (alist.has("obs") or alist.has("obsx")) and not alist.has("obsy"):
 		oname = alist.get("obs")
-		if alist.has("obs1"): oname = alist.get("obs1")
+		if alist.has("obsx"): oname = alist.get("obsx")
 		obs = db.getRow("observables", "name=='" + oname + "'")
 		if obs[6].strip() == "[]": binargs.append(clist.clist(list(bins(int(obs[3]), float(obs[4]), float(obs[5])))))
 		else                     : binargs.append(clist.clist(eval(obs[6])))
@@ -324,9 +382,9 @@ def prepareHistInfo(db, alist):
 		names = [obs[1], yaxis]
 	
 	## 2d histogram
-	elif alist.has("obs1") and alist.has("obs2"):
-		obs1 = db.getRow("observables", "name=='" + alist.get("obs1") + "'")
-		obs2 = db.getRow("observables", "name=='" + alist.get("obs2") + "'")
+	elif alist.has("obsx") and alist.has("obsy"):
+		obs1 = db.getRow("observables", "name=='" + alist.get("obsx") + "'")
+		obs2 = db.getRow("observables", "name=='" + alist.get("obsy") + "'")
 		if obs1[6].strip() == "[]": binargs.append(clist.clist(list(bins(int(obs1[3]), float(obs1[4]), float(obs1[5])))))
 		else                      : binargs.append(clist.clist(eval(obs1[6])))
 		if obs2[6].strip() == "[]": binargs.append(clist.clist(list(bins(int(obs2[3]), float(obs2[4]), float(obs2[5])))))
@@ -423,6 +481,13 @@ def saveHist(file, h, name):
 	return h
 
 
+## scaleLumi
+##---------------------------------------------------------------
+def scaleLumi(lumi, xsec, nevts):
+
+	return lumi * xsec / nevts
+
+
 ## setDType
 ##---------------------------------------------------------------
 def setDType(dtype, variable):
@@ -495,5 +560,47 @@ def uniformBins(bins = []):
 		return False
 
 	return True
+
+
+## usePath
+##---------------------------------------------------------------
+def usePath(mypafpath, headpath, filepath, argpath = ""):
+	## realizes the logic of combining different paths to a file
+	## mypafpath = default mypaf input path
+	## headpath  = input directory given in header of cfg file
+	## filepath  = input filepath of input file
+	## argpath   = directory given in arguments to input object
+
+	## argpath replaces headpath
+	if argpath != "": headpath = argpath
+
+	## no filepath
+	if filepath == "": return ""
+
+	## absolute filepath
+	if filepath[0] == "/": return filepath
+
+	## relative filepath and absolute headpath -> relative to headpath
+	if headpath[0] == "/": return headpath.rstrip("/") + "/" + filepath
+
+	## relative filepath and relative headpath -> all relative to mypaf input path
+	return mypafpath + headpath.rstrip("/") + "/" + filepath
+	
+
+
+## useVal
+##---------------------------------------------------------------
+def useVal(default, value1, value2 = ""):
+	if   value2 != "": return value2
+	elif value1 != "": return value1
+	return default
+
+
+## writeFile
+##---------------------------------------------------------------
+def writeFile(path, text):
+	f = open(path, "w")
+	f.write(text)
+	f.close()
 
 

@@ -19,15 +19,19 @@ class evlist:
 
 	## __init__
 	##---------------------------------------------------------------
-	def __init__(self, mypaf, name, variables):
+	def __init__(self, mypaf, name, variables, argstring = ""):
 
 		self.mypaf     = mypaf
 		self.db        = mypaf.db
 		self.vb        = mypaf.vb
 
 		self.name      = name.strip()
-		self.vars      = ["Row"]
+		self.alist     = args.args(argstring)
+		self.vars      = ["Row", lib.useVal("run" , self.mypaf.input.cfg.getVar("treevarrun" )), \
+		                         lib.useVal("lumi", self.mypaf.input.cfg.getVar("treevarlumi")), \
+		                         lib.useVal("evt" , self.mypaf.input.cfg.getVar("treevarevt" ))]
 		self.vars.extend(variables)
+		self.built     = False
 
 
 	## addEntry
@@ -46,8 +50,9 @@ class evlist:
 		self.sources = sources
 		self.categs  = categs
 
-		self.paths   = [[mypaf.temppath + "evlist_" + name + "_" + str(sidx) + "_" + str(cidx) + ".txt" for sidx in range(len(sources))] for cidx in range(len(categs))]
+		self.paths   = [[self.mypaf.prodpath + "evlist_" + self.name + "_" + str(sidx) + "_" + str(cidx) + ".txt" for sidx in range(len(sources))] for cidx in range(len(categs))]
 		self.files   = [[open(self.paths[sidx][cidx], "a") for sidx in range(len(sources))] for cidx in range(len(categs))]
+		self.built   = True
 
 
 	## close
@@ -84,7 +89,7 @@ class evlist:
 
 	## exportAsText
 	##---------------------------------------------------------------
-	def export(self):
+	def exportAsText(self):
 		## returns the content of the event list as a string in readable form
 
 		self.close()
@@ -115,6 +120,7 @@ class evlist:
 
 		f = open(path, "r")
 		full = f.readlines()
+		cols = lib.getColWidths(full)
 		f.close()
 		assoc = [i for i in range(len(self.vars))]
 
@@ -122,15 +128,17 @@ class evlist:
 		lib.rmFile(self.paths[sidx][cidx])
 		self.files[sidx][cidx] = open(self.paths[sidx][cidx], "a")
 
-		for i, head in enumerate(full[1].split("*")[1:]):
-			j = lib.findElm(self.vars, head.strip())
+		for i, head in enumerate([entry.strip() for entry in full[1].strip("\n").split("*")[1:len(full[1].split("*"))-1]]):
+			j = lib.findElm(self.vars, head)
 			assoc[i] = j 
 
-		for line in full[3:]:
-			nl = [elm[assoc[i]].strip() for i in range(len(line.split("*")[1:]))]
+		for line in full[3:len(full)-1]:
+			elm = line.split("*")[1:len(line.split("*"))-1]
+			nl = [lib.formatStr(elm[assoc[i]].strip(), cols[i]) for i in range(len(elm))]
 			self.files[sidx][cidx].write(":=".join(nl) + "\n")
 
 
-
+	## getColWidths
+	## formatStr
 
 

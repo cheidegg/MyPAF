@@ -12,20 +12,24 @@
 import args, clist, dbreader, hist, mypaf, vb
 
 
-## evyields
+## obyield
 ##------------------------------------------------------------------- 
-class evyields:
+class obyield:
 
 
 	## __init__
 	##---------------------------------------------------------------
-	def __init__(self, mypaf, name):
+	def __init__(self, mypaf, obj, name, variable, argstring = ""):
 
 		self.mypaf     = mypaf
 		self.db        = mypaf.db
 		self.vb        = mypaf.vb
 
+		self.obj       = obj.strip()
 		self.name      = name.strip()
+		self.variable  = variable
+		self.alist     = args.args(argstring)
+		self.built     = False
 
 
 	## build
@@ -35,7 +39,8 @@ class evyields:
 		self.sources = sources
 		self.categs  = categs
 
-		self.yields = [[0. for sidx in range(len(sources))] for cidx in range(len(categs))]
+		self.yields  = [[0. for sidx in range(len(sources))] for cidx in range(len(categs))]
+		self.built   = True
 
 
 	## count
@@ -50,7 +55,7 @@ class evyields:
 	def exportAsHist(self):
 		## exports the event yields as a hist instance
 
-		h = hist.hist(self.mypaf, self.name, clist.clist(1, 0, 1), [self.name, "events"])
+		h = hist.hist(self.mypaf, self.name, clist.clist(1, 0, 1), [self.name, self.obj])
 		h.build(self.sources, self.categs)
 
 		for sidx in range(len(self.sources)):

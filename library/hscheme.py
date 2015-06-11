@@ -200,23 +200,8 @@ class hscheme:
 			self.h = obj
 			return True
 
-		## set histogram from evlist
-		if self.type == "elhist":
-			self.h = obj.exportAsHist()
-			return True
-
-		## set histogram from evyields
-		if self.type == "eyhist":
-			self.h = obj.exportAsHist()
-			return True
-
-		## set histogram from oblist
-		if self.type == "olhist":
-			self.h = obj.exportAsHist()
-			return True
-
-		## set histogram from obyields
-		if self.type == "oyhist":
+		## set histogram from evlist, evyields, oblist or obyields
+		else:
 			self.h = obj.exportAsHist()
 			return True
 

@@ -9,7 +9,8 @@
 #################################################################
 #################################################################
 
-import args, cfg, dbreader, lib, mypaf, source, vb
+import sys
+import args, cfg, cfgobj, dbreader, lib, mypaf, source, vb
 
 
 ## input
@@ -32,19 +33,21 @@ class input:
 		self.vb    = mypaf.vb
 
 		self.build()
+		self.setSources()
 
 
 	## build
 	##---------------------------------------------------------------
 	def build(self):
 
-		if   self.mypaf.imodule == 1: return self.buildTree()
-		elif self.mypaf.imodule == 2: return self.buildDraw()
-		elif self.mypaf.imodule == 3: return self.buildPlot()
-		elif self.mypaf.imodule == 4: return self.buildScan()
-		elif self.mypaf.imodule == 5: return self.buildStat()
-		elif self.mypaf.imodule == 6: return self.buildHist()
-		elif self.mypaf.imodule == 7: return self.buildPubl()
+		if self.mypaf.imodule == 6: return self.buildHist()
+		#if   self.mypaf.imodule == 1: return self.buildTree()
+		#elif self.mypaf.imodule == 2: return self.buildDraw()
+		#elif self.mypaf.imodule == 3: return self.buildPlot()
+		#elif self.mypaf.imodule == 4: return self.buildScan()
+		#elif self.mypaf.imodule == 5: return self.buildStat()
+		#elif self.mypaf.imodule == 6: return self.buildHist()
+		#elif self.mypaf.imodule == 7: return self.buildPubl()
 		
 		return False
 
@@ -92,29 +95,33 @@ class input:
 		self.input   = self.cfg.getAll("input")
 		self.output  = self.cfg.getAll("output")
 		self.modules = []
+		self.objects = []
 		ignore = []
 
 		for i, scheme in enumerate(self.schemes):
-			needs     = scheme[2].strip().split()[0].strip()
-			needstype = lib.getElmVar(self.output, 1, needs, 0)
-			if needstype == "tree":
-				self.vb.warning("scheme wants to use invaliv input. scheme not drawn.")
-				ignore.append(i)
-			elif needstype == "file" or needstype == "plot":
-				needsdef = lib.getElmVar(self.output, 1, needs, 2)
-				if needsdef[0:4] == "FILE" or needsdef[0:4] == "HIST":
-					self.modules = lib.addToVectorIfMissing(self.modules, "plot")
-				else:
-					self.modules = lib.addToVectorIfMissing(self.modules, "draw")
-			elif needstype == "evlist" or needstype == "oblist":
-				self.modules = lib.addToVectorIfMissing(self.modules, "scan") 
-			elif needstype == "evyields" or needstype == "obyields" or needstype == "effmap" or needstype == "roc":
-				self.modules = lib.addToVectorIfMissing(self.modules, "stat") 
-			## SCHEMES ALSO MAY USE OTHER SCHEMES AS INPUT!
-			#else:
-			#	self.vb.warning("scheme wants to use invalid input. scheme not drawn.")
-			#	ignore.append(i)	
+			needs     = scheme[2].strip().split()
+			for n in needs:
+				n = n.strip()
+				needstype = lib.getElmVar(self.output, 1, n, 0)
+				if needstype == "tree":
+					self.vb.warning("A scheme wants to use invalid input. Scheme ignored.")
+					ignore.append(i)
+				elif needstype == "file" or needstype == "plot":
+					needsdef = lib.getElmVar(self.output, 1, n, 2)
+					if needsdef[0:4] == "FILE" or needsdef[0:4] == "HIST":
+						self.modules = lib.addToVectorIfMissing(self.modules, "plot")
+					else:
+						self.modules = lib.addToVectorIfMissing(self.modules, "draw")
+					self.objects = lib.addToVectorIfMissing(self.objects, n) 
+				elif needstype == "evlist" or needstype == "oblist":
+					self.modules = lib.addToVectorIfMissing(self.modules, "scan") 
+					self.objects = lib.addToVectorIfMissing(self.objects, n) 
+				elif needstype == "evyield" or needstype == "obyield" or needstype == "effmap" or needstype == "roc":
+					self.modules = lib.addToVectorIfMissing(self.modules, "stat") 
+					self.objects = lib.addToVectorIfMissing(self.objects, n) 
 
+		## remove all modules where we had invalid input
+		## not necessary to remove the objects from those modules as they won't be drawn
 		self.modules = lib.removeFromVector(self.modules, ignore)
 
 
@@ -197,5 +204,67 @@ class input:
 
 		self.output    = self.cfg.getAll("output", "type=='tree'")
 
+
+	## setSources
+	##---------------------------------------------------------------
+	def setSources(self):
+		## source can be
+		## - sample
+		## - dataset
+		## - group
+		## - gengroupbasic
+		## - gengroupraw
+		## - gengroupfine
+		## - custom
+		## source variable in header can take, only applies to tree input!
+		## - sample
+		## - dataset
+		## - group
+
+		self.sources = []
+
+		if not self.cfg.hasVar("source"):
+			self.vb.error("general source not specified. exiting")
+
+		hs = self.cfg.hasVar("source")
+		sn = self.cfg.getVar("source")
+		
+		for i, iobj in enumerate(self.cfg.getObjs("region=='input' and type=='tree'")):
+			alist = args.args(iobj.argstring)
+
+			if not iobj.type == "tree" and not alist.has("source"): 
+				self.vb.error("source not specified for input object " + iobj.name)
+
+			## source given to this input object
+			if alist.has("source"): 
+				s = alist.get("source")
+
+			## source not given, take default defined in header
+			else:
+				if not iobj.type == "tree":			
+					self.vb.error("source not specified for input object " + iobj.name)
+
+				if sn == "dataset":
+					s = self.db.getVar("samples", iobj.name, "dataset")
+				elif sn == "group":
+					s = self.db.getVar("samples", iobj.name, "group")
+				else:
+					s = iobj.name
+
+			sidx = lib.findElm(self.sources, s)
+			if sidx == -1:
+				self.sources.append(s)
+				sidx = len(self.sources) - 1
+
+			iobj.setSource(sidx)
+
+
+		for i, iobj in enumerate(self.cfg.getObjs("region=='output'")):
+			alist = args.args(iobj.argstring)
+			if alist.has("source"):
+				sidx = lib.findElm(self.sources, alist.get("source"))
+				if sidx == -1:
+					self.sources.append(alist.get("source"))
+					sidx = len(self.sources) - 1
 
 

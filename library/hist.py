@@ -17,31 +17,18 @@ import args, clist, lib, hstyle, rstuff, schemes, source
 ##------------------------------------------------------------------- 
 class hist:
 
-	#dim     = 0
-	#var     = "zombie"
-	#binargs = None
-
-	#d       = ""
-	#h       = []
-	#p       = False
-	#parent  = None
-
-	#alist   = None
-	mypaf   = None
-	db      = None
-	vb      = None
 
 
 	## __init__
 	##---------------------------------------------------------------
-	def __init__(self, mypaf, var, binargs, labels, arglist = ""):
+	def __init__(self, mypaf, name, binargs, labels, argstring = ""):
 
-		self.var     = var
+		self.name    = name
 		self.binargs = binargs
 		self.p       = False
 		self.built   = False
 
-		self.alist   = args.args(arglist)
+		self.alist   = args.args(argstring)
 		self.mypaf   = mypaf
 		self.db      = mypaf.db
 		self.vb      = mypaf.vb
@@ -65,7 +52,7 @@ class hist:
 
 	## applyArgs
 	##---------------------------------------------------------------
-	def applyArgs(self):
+	def applyArgs(self, pad = 0):
 
 
 		## reset source (for hists in schemes, they only have one hist and source)
@@ -80,7 +67,7 @@ class hist:
 
 		## apply style stuff	
 		self.applyGrid  ()
-		self.applyLog   ()
+		self.applyLog   (pad)
 		self.applyErrors()
 		self.applyNorm  ()
 
@@ -112,18 +99,17 @@ class hist:
 
 	## applyLog
 	##---------------------------------------------------------------
-	def applyLog(self):
+	def applyLog(self, pad = 0):
 
 		if self.alist.has("log")                              : log = self.alist.get("log")
 		elif hasattr(self, "defaults") and self.defaults != []: log = self.defaults[3]
 		else                                                  : log = "none"
 
-		if log.find("x") != -1:
-			ROOT.gPad.SetLogx()
-		if log.find("y") != -1:
-			ROOT.gPad.SetLogy()
-		if log.find("z") != -1:
-			ROOT.gPad.SetLogz()
+		pad = self.mypaf.pads[pad]
+
+		if log.find("x") != -1: pad.SetLogx()
+		if log.find("y") != -1: pad.SetLogy()
+		if log.find("z") != -1: pad.SetLogz()
 
 
 	## applyNorm
@@ -176,27 +162,30 @@ class hist:
 		for sidx in range(len(self.h)):
 
 			col = eval(self.sources[sidx].color)
-			if self.dim == 2 and self.d.find("colz") != -1 and self.d.find("text") != -1: 
+			if self.dim == 2 and self.d.find("text") != -1: 
 				col = ROOT.kBlack
+			acol = ""
+			if self.alist.has("color"): 
+				acol = str(eval(self.alist.get("color")))
 
-			color       = lib.argsWin(ROOT.kBlack, col                           , self.alist.get("color"      ))
+			color       = lib.argsWin(ROOT.kBlack, col                           , acol                         )
 			fillstyle   = lib.argsWin(1001       , self.sources[sidx].fillstyle  , self.alist.get("fillstyle"  ))
 			linestyle   = lib.argsWin(1          , self.sources[sidx].linestyle  , self.alist.get("linestyle"  ))
-			linewidth   = lib.argsWin(2          , self.sources[sidx].linestyle  , self.alist.get("linewidth"  ))
+			linewidth   = lib.argsWin(2          , self.sources[sidx].linewidth  , self.alist.get("linewidth"  ))
 			markerstyle = lib.argsWin(8          , self.sources[sidx].markerstyle, self.alist.get("markerstyle"))
-			markersize  = lib.argsWin(1.8        , self.sources[sidx].markerstyle, self.alist.get("markersize" ))
+			markersize  = lib.argsWin(1.8        , self.sources[sidx].markersize , self.alist.get("markersize" ))
 
 			for cidx in range(len(self.h[sidx])):
-				self.h[sidx][cidx].SetMaximum(0.7)
-				self.h[sidx][cidx].SetMinimum(0.0)
+				#self.h[sidx][cidx].SetMaximum(0.7)
+				#self.h[sidx][cidx].SetMinimum(0.0)
 				self.h[sidx][cidx].SetFillColor(color)
 				self.h[sidx][cidx].SetFillStyle(fillstyle)
 				self.h[sidx][cidx].SetLineColor(color)
 				self.h[sidx][cidx].SetLineStyle(linestyle)
-				self.h[sidx][cidx].SetLineWidth(2)
+				self.h[sidx][cidx].SetLineWidth(linewidth)
 				self.h[sidx][cidx].SetMarkerColor(color)
 				self.h[sidx][cidx].SetMarkerStyle(markerstyle)
-				self.h[sidx][cidx].SetMarkerSize(1.8)
+				self.h[sidx][cidx].SetMarkerSize(markersize)
 
 
 	## build
@@ -211,7 +200,7 @@ class hist:
 			appender = []
 			for c in self.categs:
 				hc = copy.deepcopy(self.parent)
-				hc.SetName(s.name + ":=" + c + ":=" + self.var)
+				hc.SetName(s.name + ":=" + c + ":=" + self.name)
 				appender.append(hc)
 
 			self.h.append(appender)
@@ -264,16 +253,16 @@ class hist:
 
 	## draw
 	##---------------------------------------------------------------
-	def draw(self, option = "", pad = 0):
+	def draw(self, option = "", pad = 0, direct = False):
 
 		if option != "": option = " " + option
 
-		self.prepareDraw()
+		self.prepareDraw(pad)
 
 		for sidx in range(len(self.h)):
 			for cidx in range(len(self.h[0])):
 				self.mypaf.pads[pad].cd()
-				self.drawH(sidx, cidx, option)
+				self.drawH(sidx, cidx, option, direct)
 
 		self.detachArgs()
 
@@ -288,16 +277,12 @@ class hist:
 		if self.alist.has("drawarrow"):
 
 			li = [l.split(",") for l in self.alist.getAll("drawarrow")]
-			lx = []
+			ar = []
 
 			for ii, l in enumerate(li):
-				lx.append(ROOT.Tlatex())
-				lx[ii].SetTextAlign(int(l[2])) 
-				lx[ii].SetTextFont (int(l[3]))
-				lx[ii].SetTextSize (int(l[4]))
-				lx[ii].SetTextColor(int(l[5]))
-				lx[ii].DrawLatex(float(l[0]), float(l[1]), l[6].replace("_", " "))
-
+				ar.append(ROOT.TArrow(l[0], l[1], l[2], l[3], l[4], ">"))
+				ar[ii].SetLineColor(l[5])
+				ar[ii].Draw()
 
 	
 	## drawBox
@@ -313,7 +298,10 @@ class hist:
 	def drawCircle(self):
 	
 		if self.alist.has("drawcircle"):
-			print "draw a circle"
+
+			li = [l.split(",") for l in self.alist.getAll("drawcircle")]
+			ci = []
+
 
 
 	## drawErrorBand
@@ -336,6 +324,10 @@ class hist:
 	##---------------------------------------------------------------
 	def drawH(self, sidx, cidx, option = "", direct = False):
 
+		self.vb.talk("Drawing histogram " + self.name + " with " + str(self.h[sidx][cidx].GetEntries()) + " entries for source " + self.sources[sidx].name + " and category " + self.categs[cidx] + ".")
+
+		print "my direct is " + str(direct)
+
 		self.drawRange(sidx, cidx)
 		self.h[sidx][cidx].Draw(self.d + option)
 		if not direct:
@@ -349,7 +341,7 @@ class hist:
 			self.drawLine()
 			self.drawNote()
 			if not direct:
-				self.mypaf.saveCanv(self.var + "_" + self.sources[sidx].name + "_" + self.categs[cidx])
+				self.mypaf.saveCanv(self.name + "_" + self.sources[sidx].name + "_" + self.categs[cidx])
 
 
 	## drawLabels
@@ -359,7 +351,7 @@ class hist:
 		pad = ROOT.gPad
 		factor = lib.getPadSize(pad)
 
-		##print "drawing labels for " + self.var + " (" + str(self.labels) + ")"	
+		##print "drawing labels for " + self.name + " (" + str(self.labels) + ")"	
 		for sidx in range(len(self.h)):
 			for cidx in range(len(self.h[0])):
 				self.h[sidx][cidx].SetTitle("")
@@ -393,7 +385,7 @@ class hist:
 			lx = []
 
 			for ii, l in enumerate(li):
-				lx.append(ROOT.Tlatex())
+				lx.append(ROOT.TLatex())
 				lx[ii].SetTextAlign(int(l[2])) 
 				lx[ii].SetTextFont (int(l[3]))
 				lx[ii].SetTextSize (int(l[4]))
@@ -406,12 +398,22 @@ class hist:
 	def drawLine(self):
 
 		if self.alist.has("drawline"):
-			print "draw a line"
+			li = [l.split(",") for l in self.alist.getAll("drawlatex")]
+			ln = []
+
+			for ii, l in enumerate(li):
+				ln.append(rstuff.line(l[0], l[1], l[2], l[3], int(lib.useVal("2", l[4])), int(lib.useVal("7", l[5])), eval(lib.useVal(str(ROOT.kBlack), l[6])))) 
+				ln.Draw()
 
 
 	## drawRange
 	##---------------------------------------------------------------
 	def drawRange(self, sidx, cidx):
+
+		## check if
+		## - need min to be set to 0
+		## - if using log scale, then set to 0.001 instead
+		## - etc
 	
 		mm = self.getMinMax(self.h[sidx][cidx])
 
@@ -423,6 +425,7 @@ class hist:
 			ymax = float(self.alist.get("ymax"))
 		else: 
 			ymin, ymax = lib.getHistMinMax(mm[1][0], mm[1][1], self.hasLogScale("y")) 
+		ymin = 0.
 		self.h[sidx][cidx].GetYaxis().SetRangeUser(ymin, ymax)
 
 		#if len(mm) > 4:
@@ -438,6 +441,7 @@ class hist:
 		elif hasattr(self, "defaults") and self.defaults != []: note  = self.defaults[1]
 		else                                                  : note  = "cms"
 
+		note = ""
 		if note == "cms":
 			mcOnly = True
 			rstuff.cms(self.mypaf.canvas, float(self.mypaf.input.cfg.getVar("luminosity")), float(self.mypaf.input.cfg.getVar("energy")), mcOnly)
@@ -453,11 +457,11 @@ class hist:
 	##---------------------------------------------------------------
 	def getBinArgs(self, dim = "x"):
 
-		if self.alist.has("n" + dim + "bins") and self.args.has(dim + "bins"):
+		if self.alist.has("n" + dim + "bins") and self.alist.has(dim + "bins"):
 			eval("bins = [" + self.args.get(dim + "bins") + "]")
 			return int(self.alist.get("n" + dim + "bins")), array.array('d', bins)
 
-		if self.alist.has("n" + dim + "bins") and self.args.has(dim + "min") and self.args.has(dim + "max"):
+		if self.alist.has("n" + dim + "bins") and self.alist.has(dim + "min") and self.alist.has(dim + "max"):
 
 			return int(self.alist.get("n" + dim + "bins")), lib.bins(int(self.alist.get("n" + dim + "bins")), float(self.alist.get(dim + "min")), float(self.alist.get(dim + "max")))
 
@@ -593,9 +597,9 @@ class hist:
 
 	## prepareDraw
 	##---------------------------------------------------------------
-	def prepareDraw(self):
+	def prepareDraw(self, pad):
 
-		self.applyArgs()
+		self.applyArgs(pad)
 		self.applySourceInfo()
 		self.drawLabels()
 
@@ -672,7 +676,7 @@ class hist:
 	##---------------------------------------------------------------
 	def saveHist(self, sidx, cidx):
 
-		self.h[sidx][cidx] = lib.saveHist(self.mypaf.output.file, self.h[sidx][cidx], self.sources[sidx].name + "/" + self.categs[cidx] + "/" + self.var)
+		self.h[sidx][cidx] = lib.saveHist(self.mypaf.output.file, self.h[sidx][cidx], self.sources[sidx].name + "/" + self.categs[cidx] + "/" + self.name)
 
 
 
@@ -697,15 +701,15 @@ class hist:
 		self.d = ""
 	
 		if self.dim == 1:
-			if self.alist.has("draw1mode"): self.d = self.alist.get("draw1mode")
+			if self.alist.has("draw1mode"): self.d = self.alist.get("draw1mode").replace("_", " ")
 			else                          : self.d = "hist"
 	
 		elif self.dim == 2:
-			if self.alist.has("draw2mode"): self.d = self.alist.get("draw2mode")
+			if self.alist.has("draw2mode"): self.d = self.alist.get("draw2mode").replace("_", " ")
 			else                          : self.d = "colz text e"
 	
 		elif self.dim == 3:
-			if self.alist.has("draw3mode"): self.d = self.alist.get("draw3mode")
+			if self.alist.has("draw3mode"): self.d = self.alist.get("draw3mode").replace("_", " ")
 			else                          : self.d = "iso"
 
 
@@ -752,7 +756,7 @@ class hist:
 			if nxbins == 0: 
 				xbins = array.array('d', binargs[0].list)
 				nxbins = int(binargs[0].len) - 1
-			self.parent = ROOT.TH1F(self.var, "", nxbins, xbins)
+			self.parent = ROOT.TH1F(self.name, "", nxbins, xbins)
 
 		## 1d histogram
 		elif len(binargs) == 3: 
@@ -761,7 +765,7 @@ class hist:
 			if nxbins == 0: 
 				nxbins = int(binargs[0])
 				xbins = lib.bins(nxbins, binargs[1], binargs[2])
-			self.parent = ROOT.TH1F(self.var, "", nxbins, xbins)
+			self.parent = ROOT.TH1F(self.name, "", nxbins, xbins)
 
 		## 2d histogram
 		elif len(binargs) == 2:
@@ -774,7 +778,7 @@ class hist:
 			if nybins == 0: 
 				ybins = array.array('d', binargs[1].list)
 				nybins = int(binargs[1].len) - 1
-			self.parent = ROOT.TH2F(self.var, "", nxbins, xbins, nybins, ybins)
+			self.parent = ROOT.TH2F(self.name, "", nxbins, xbins, nybins, ybins)
 
 		## 2d histogram
 		elif len(binargs) == 6:
@@ -787,7 +791,7 @@ class hist:
 			if nybins == 0: 
 				nybins = int(binargs[3])
 				ybins = lib.bins(nybins, binargs[4], binargs[5])
-			self.parent = ROOT.TH2F(self.var, "", nxbins, xbins, nybins, ybins)
+			self.parent = ROOT.TH2F(self.name, "", nxbins, xbins, nybins, ybins)
 
 		## 3d histogram
 		elif len(binargs) == 7:
@@ -804,7 +808,7 @@ class hist:
 			if nzbins == 0: 
 				nzbins = int(binargs[4])
 				zbins  = array.array('d', binargs[5].list)
-			self.parent = ROOT.TH3F(self.var, "", nxbins, xbins, nybins, ybins, nzbins, zbins)
+			self.parent = ROOT.TH3F(self.name, "", nxbins, xbins, nybins, ybins, nzbins, zbins)
 
 		## 3d histogram
 		elif len(binargs) == 9:
@@ -821,7 +825,7 @@ class hist:
 			if nzbins == 0: 
 				nzbins = int(args[6])
 				zbins = lib.bins(nzbins, binargs[7], binargs[8])
-			self.parent = ROOT.TH3F(self.var, "", nxbins, xbins, nybins, ybins, nzbins, zbins)
+			self.parent = ROOT.TH3F(self.name, "", nxbins, xbins, nybins, ybins, nzbins, zbins)
 
 		## options are bad
 		else:

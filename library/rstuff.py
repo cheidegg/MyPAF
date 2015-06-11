@@ -54,7 +54,7 @@ def cms(canv, lumi, energy, mcOnly = False):
 		if lumi > 1000.:
 			lx.DrawLatex(0.89, 0.88 * f, "#sqrt{s} = %.0f TeV, L_{int} = %.1f fb^{-1}" % (energy, lumi/1000.))
 		else:
-			lx.DrawLatex(0.89, 0.88 * f, "#sqrt{s} = %.0f TeV, L_{int} = %.0f pb^{-1}" % (energy, lumi/1000.)) 
+			lx.DrawLatex(0.89, 0.88 * f, "#sqrt{s} = %.0f TeV, L_{int} = %.0f pb^{-1}" % (energy, lumi)) 
 
 	return
 	## need to reconsider!

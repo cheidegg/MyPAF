@@ -101,6 +101,7 @@ CONFIGURATION:
                                                                    group (rares, qcd, etc), 
                                                                    gengroup (fakes, prompt, etc), 
                                                                    none (no grouping of the samples), default is none
+  - sources      : which source to use as default
   - inputdir     : default dir for all the inputs, relative to MyPAF/input/
   - inputtree    : default tree name for all the input trees
   - logscale     : y for everything in log scale, false otherwise
@@ -121,12 +122,13 @@ CONFIGURATION:
   - args: obj
 * input
   - format: type := name := path := args
-  - type: tree, file, root, evlist, evyields, oblist, obyields, number
-  - args: dir, tree, data 
+  - type: tree, file, root, evlist, evyield, oblist, obyield, number
+  - args: dir, tree, data, source
   - it is important that the args are separated by a blank space and there is only a = between key and value
+  - note also, that every input object has a source! either as a sample + header variable "source", or as an argument passed to the entry
 * output
   - format: type := name := definition := args
-  - type: tree, file, plot, root, evlist, oblist, evyields, obyields, effmap
+  - type: tree, file, plot, root, evlist, oblist, evyield, obyield, effmap, roc
   - definition: tree variable to draw, accessor for hist
   - making histograms, access files (root hists) by: FILE[name]::directory/histogram
   - making histograms, access histograms (root)  by: HIST[name]::canvas::histogram

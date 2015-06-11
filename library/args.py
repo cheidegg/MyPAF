@@ -37,6 +37,32 @@ class args:
 				self.list.append(part[1])
 
 
+	## all
+	##---------------------------------------------------------------
+	def all(self, keypostpend = ""):
+		## for all keys that end on keypostpend, assemble a argstring
+		## with all keys and values 
+
+		res = []
+		for i, k in enumerate(self.keys):
+			if k[len(k)-len(keypostpend):] == keypostpend:
+				res.append(k + "=" + self.list[i])
+		return " ".join(res)		
+
+
+	## allStrip
+	##---------------------------------------------------------------
+	def allStrip(self, keypostpend = ""):
+		## same as all but strips off the keypostpend
+
+		res = []
+		for i, k in enumerate(self.keys):
+			if k[len(k)-len(keypostpend):] == keypostpend:
+				res.append(k[:len(k)-len(keypostpend)] + "=" + self.list[i])
+		return " ".join(res)		
+
+
+
 	## has
 	##---------------------------------------------------------------
 	def has(self, key):

@@ -11,12 +11,12 @@
 ## collection of functions performing some parsing
 
 import copy, ROOT
-import cfg, dbreader, lib, mypaf
+import cfg, cfgobj, dbreader, lib, mypaf
 
 
 ## access
 ##---------------------------------------------------------------
-def access(mypaf, inputs, vidx, definition):
+def access(mypaf, iobjs, definition, argdir, rescale):
 
 	definition = definition.strip()
 	if len(definition) == 0: return None
@@ -24,26 +24,25 @@ def access(mypaf, inputs, vidx, definition):
 
 	sdef = definition.split("::")
 	source  = ""
-	rescale = 1.0
 
 	## source given
 	if sdef[0][0:4] == "FILE" and len(sdef) == 3: source = sdef[2]
 	if sdef[0][0:4] == "HIST" and len(sdef) == 4: source = sdef[3] 
-	if source != "":
-		attr = mypaf.db.getRow("samples", "name == '" + source + "'")
-		if attr != []:
-			rescale = float(mypaf.input.cfg.getVar("luminosity")) * float(eval(attr[4])) / float(eval(attr[6]))
 
 	## access histogram in ROOT file
 	if sdef[0][0:4] == "FILE":
 		fname = sdef[0][5:-1]
-		fpath = lib.getElmVar(inputs, vidx, fname, vidx+1) 
+		fpath = lib.usePath(mypaf.inputpath, mypaf.input.cfg.getVar("inputdir"), \
+		                                     iobjs[lib.findElmAttr(iobjs, "name", fname)].definition, \
+		                                     argdir)
 		return accessFile(fpath, sdef[1], rescale)
 
 	## access histogram in canvas in ROOT file
 	elif sdef[0][0:4] == "HIST":
 		fname = sdef[0][5:-1]
-		fpath = lib.getElmVar(inputs, vidx, fname, vidx+1) 
+		fpath = lib.usePath(mypaf.inputpath, mypaf.input.cfg.getVar("inputdir"), \
+		                                     iobjs[lib.findElmAttr(iobjs, "name", fname)].definition, \
+		                                     argdir)
 		return accessHist(fpath, sdef[1], sdef[2], rescale)
 
 	return None

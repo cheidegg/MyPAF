@@ -9,7 +9,7 @@
 #################################################################
 #################################################################
 
-import dbreader, clist, lib, mypaf, parser, vb
+import cfgobj, clist, dbreader, lib, mypaf, parser, vb
 
 
 ## cfg
@@ -42,6 +42,7 @@ class cfg:
 		self.vb     = input.mypaf.vb
 
 		self.load(path)	
+		self.loadObjs()
 
 
 	## get
@@ -124,6 +125,20 @@ class cfg:
 		return self.header[idx].list
 
 
+	## getObjs
+	##--------------------------------------------------------------- 
+	def getObjs(self, selection = ""):
+
+		for k,v in self.objs[0].__dict__.items():
+			selection = selection.replace(k, "obj." + k)
+
+		olist = []
+		for obj in self.objs:
+			if parser.parse(obj, "obj", selection):		
+				olist.append(obj)
+		return olist
+
+
 	## getVar
 	##--------------------------------------------------------------- 
 	def getVar(self, selection, region = "head"):
@@ -135,6 +150,16 @@ class cfg:
 		if len(column)>0:
 			return column[0]
 		return ""
+
+
+	## hasVar
+	##--------------------------------------------------------------- 
+	def hasVar(self, selection, region = "head"):
+
+		column = self.getColumn(region, "name=='" + selection + "'", "value")
+		if len(column)==0: return False
+		if column[0].strip() == "": return False
+		return True
 
 
 	## load
@@ -167,6 +192,20 @@ class cfg:
 			cols = line.split(":=")
 			cols = [cell.strip().strip("\t") for cell in cols]
 			eval("self." + region + ".append(cols)")
+
+
+	## loadObjs
+	##--------------------------------------------------------------- 
+	def loadObjs(self):
+
+		self.objs = []
+		for i, region in enumerate(self.regions):
+			if region == "head": continue
+			full = self.getAll(region)
+			if region == "selection":
+				full.append(["none", "nosel", ""])
+			for entry in full:
+				self.objs.append(eval("cfgobj.cfgobj(region, " + ", ".join(["entry[" + str(j) + "]" for j in range(self.header[i].len)]) + ")"))
 
 
 	## reload
