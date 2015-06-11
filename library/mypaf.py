@@ -30,8 +30,8 @@ class mypaf:
 
 	imodule    = -1
 	module     = ""
-	path       = "/Users/conni/Computing/MyPAF/"
-	#path       = "/shome/cheidegg/d/MyPAF/"
+	#path       = "/Users/conni/Computing/MyPAF/"
+	path       = "/shome/cheidegg/p/MyPAF/"
 	prod       = ""
 
 	cfgpath    = path + "cfg/"
@@ -46,6 +46,8 @@ class mypaf:
 	##---------------------------------------------------------------
 	def __init__(self, module, cfgfile, title = ""):
 
+		self.createEnvironment()
+
 		self.title  = title.strip().lower()
 		self.module = module.strip()
 		self.setIModule()
@@ -56,8 +58,8 @@ class mypaf:
 		self.cfg    = self.input.cfg
 
 		self.newProd()
-		self.createEnvironment()
 		self.createOutputStruct()
+		self.vb.move()
 
 		self.output = output.output(self)
 
@@ -254,14 +256,15 @@ class mypaf:
 	##---------------------------------------------------------------
 	def restart(self, module):
 
+		self.createEnvironment()
 		cfgfile = self.cfg.path
 
 		self.module = module.strip()
 		self.setIModule()
-		self.createEnvironment()
 		self.createOutputStruct()
 		
 		self.vb     = vb.vb(self, 1) 
+		self.vb.move()
 		self.db     = dbreader.dbreader(self)
 		
 		self.input  = input.input  (self, cfgfile)
@@ -311,6 +314,8 @@ class mypaf:
 				## loop over selection
 				for cidx, sel in enumerate(self.findSelections(["tree"], valist)):
 
+					vdef = var.definition.split("::")
+
 					dim  = self.output.objcoll.getHistDim (var.name)
 					bins = self.output.objcoll.getHistBins(var.name)
 
@@ -321,7 +326,10 @@ class mypaf:
 					                                                   len(bins[2].list)-1, array.array('d', bins[2].list))
 					else:          htemp = ROOT.TH1F("htemp", "htemp", len(bins[0].list)-1, array.array('d', bins[0].list))
 
-					self.vb.talk("Drawing " + str(t.Draw(var.definition + ">>htemp", sel.definition)) + " entries into " + var.name + ".")
+					if len(vdef) == 2: num = t.Draw(vdef[0] + ">>htemp", vdef[1], sel.definition) ## weight given
+					else             : num = t.Draw(vdef[0] + ">>htemp",          sel.definition) ## weight set to 1
+
+					self.vb.talk("Drawing " + str(num) + " entries into " + var.name + ".")
 					htemp.Scale(self.findScale(alist))
 					self.output.objcoll.injectHist(var.name, htemp, sidx, cidx)
 

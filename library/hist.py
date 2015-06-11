@@ -326,8 +326,6 @@ class hist:
 
 		self.vb.talk("Drawing histogram " + self.name + " with " + str(self.h[sidx][cidx].GetEntries()) + " entries for source " + self.sources[sidx].name + " and category " + self.categs[cidx] + ".")
 
-		print "my direct is " + str(direct)
-
 		self.drawRange(sidx, cidx)
 		self.h[sidx][cidx].Draw(self.d + option)
 		if not direct:
@@ -425,8 +423,16 @@ class hist:
 			ymax = float(self.alist.get("ymax"))
 		else: 
 			ymin, ymax = lib.getHistMinMax(mm[1][0], mm[1][1], self.hasLogScale("y")) 
-		ymin = 0.
-		self.h[sidx][cidx].GetYaxis().SetRangeUser(ymin, ymax)
+
+		## only for TH1F so far
+		if self.dim == 1:
+			ymax = self.h[sidx][cidx].GetMaximum() * 1.2
+			ymin = 0.
+			if self.hasLogScale("y"): 
+				ymin = 0.7
+				ymax = ymax*1.25 ## in order to get GetMaximum() * 1.5
+			self.h[sidx][cidx].GetYaxis().SetRangeUser(ymin, ymax)
+
 
 		#if len(mm) > 4:
 		#	zmin, zmax = lib.getHistMinMax(mm[2][0], mm[2][1], self.hasLogScale("z"))
@@ -472,11 +478,11 @@ class hist:
 	##---------------------------------------------------------------
 	def getBins(self):
 
-		bins = [clist.clist(list(self.parent.GetXaxis().GetXbins()))]
+		bins = [clist.clist(lib.toList(self.parent.GetXaxis().GetXbins()))]
 		if self.dim == 2:
-			bins.append(clist.clist(list(self.parent.GetYaxis().GetXbins())))
+			bins.append(clist.clist(lib.toList(self.parent.GetYaxis().GetXbins())))
 		if self.dim == 3:
-			bins.append(clist.clist(list(self.parent.GetZaxis().GetXbins())))
+			bins.append(clist.clist(lib.toList(self.parent.GetZaxis().GetXbins())))
 
 		return bins
 
@@ -633,14 +639,16 @@ class hist:
 	def rebinByParent(self, hist):
 
 		rebin = False
-		if self.parent.GetXaxis().GetXbins() != hist.GetXaxis().GetXbins(): rebin = True
+		if lib.toList(self.parent.GetXaxis().GetXbins()) != lib.toList(hist.GetXaxis().GetXbins()): rebin = True
 		if self.dim == 2 and \
-		   self.parent.GetYaxis().GetXbins() != hist.GetYaxis().GetXbins(): rebin = True
+		   lib.toList(self.parent.GetYaxis().GetXbins()) != lib.toList(hist.GetYaxis().GetXbins()): rebin = True
 		elif self.dim == 3 and \
-		   self.parent.GetZaxis().GetXbins() != hist.GetZaxis().GetXbins(): rebin = True
+		   lib.toList(self.parent.GetZaxis().GetXbins()) != lib.toList(hist.GetZaxis().GetXbins()): rebin = True
 
 		if rebin:
-			hist = self.rebin(hist, list(self.parent.GetXaxis().GetXbins()), list(self.parent.GetYaxis().GetXbins()), list(self.parent.GetZaxis().GetXbins()))
+			hist = self.rebin(hist, lib.toList(self.parent.GetXaxis().GetXbins()), \
+			                        lib.toList(self.parent.GetYaxis().GetXbins()), \
+			                        lib.toList(self.parent.GetZaxis().GetXbins()))
 
 		return hist
 

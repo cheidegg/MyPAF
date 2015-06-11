@@ -477,6 +477,7 @@ def saveHist(file, h, name):
 	
 	h.SetName(sn[2])
 	h.Write()
+	file.Write()
 
 	return h
 
@@ -503,13 +504,14 @@ def setDType(dtype, variable):
 ##---------------------------------------------------------------
 def setProperBinning(h):
 
-	if list(h.GetXaxis().GetXbins()) == []:
+	if toList(h.GetXaxis().GetXbins()) == []:
 
 		hname  = h.GetName()
 		htitle = h.GetTitle()
 		hdim   = h.GetDimension()
 
 		xbins = bins(h.GetXaxis().GetNbins(), h.GetXaxis().GetXmin(), h.GetXaxis().GetXmax())
+		print xbins
 
 		if hdim == 2 or hdim == 3:
 			ybins = bins(h.GetYaxis().GetNbins(), h.GetYaxis().GetXmin(), h.GetYaxis().GetXmax())
@@ -546,7 +548,15 @@ def subset(objlist, selection = "", objname = ""):
 
 	return subset
 
-	
+
+## toList
+##---------------------------------------------------------------
+def toList(tarrayd):
+
+	list = []
+	for i in range(tarrayd.GetSize()):
+		list.append(tarrayd[i])
+	return list
 
 
 ## uniformBins
@@ -581,7 +591,9 @@ def usePath(mypafpath, headpath, filepath, argpath = ""):
 	if filepath[0] == "/": return filepath
 
 	## relative filepath and absolute headpath -> relative to headpath
-	if headpath[0] == "/": return headpath.rstrip("/") + "/" + filepath
+	if headpath[0] == "/": 
+		if headpath.find("psi.ch") != -1: headpath = "dcap://t3se01.psi.ch:22125/" + headpath
+		return headpath.rstrip("/") + "/" + filepath
 
 	## relative filepath and relative headpath -> all relative to mypaf input path
 	return mypafpath + headpath.rstrip("/") + "/" + filepath

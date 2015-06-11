@@ -41,7 +41,7 @@ class sample:
 		self.db    = mypaf.db
 		self.vb    = mypaf.vb
 
-		if path[0] != "/": path = mypaf.inputpath + path
+		if path[0] != "/" and path.find("dcap") == -1: path = mypaf.inputpath + path
 
 		self.name = name
 		self.path = path
@@ -69,7 +69,7 @@ class sample:
 	def load(self):
 		## loads and opens the TFile and TTree
 
-		self.file     = ROOT.TFile(self.path, "read")
+		self.file     = ROOT.TFile.Open(self.path, "read")
 		self.tree     = self.file.Get(self.treename)
 		self.nentries = self.tree.GetEntries()
 

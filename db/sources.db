@@ -1,86 +1,80 @@
-name         := type          := lname               := dstype := cgroup := color           := fillstyle := linestyle := linewidth := markerstyle := markersize
+name         := type          := lname                    := dstype := cgroup := color           := fillstyle := linestyle := linewidth := markerstyle := markersize
 ##------------------------------------------------------------------------------------------------------------------------
-dmu15a       := sample        := data (double #mu 2015A) := d  := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
-dmu15b       := sample        := data (double #mu 2015B) := d  := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
-dmu15c       := sample        := data (double #mu 2015C) := d  := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
-dmu15d       := sample        := data (double #mu 2015D) := d  := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
-dyph14       := sample        := DY                  := b      := red    := ROOT.kRed+3     := 1001      := 1         := 2         := 8           := 1.8
-dy100ph14    := sample        := DY (HT100-200)      := b      := red    := ROOT.kRed+2     := 1001      := 2         := 2         := 8           := 1.8
-dy200ph14    := sample        := DY (HT200-400)      := b      := red    := ROOT.kRed+1     := 1001      := 3         := 2         := 8           := 1.8
-dy400ph14    := sample        := DY (HT400-600)      := b      := red    := ROOT.kRed       := 1001      := 4         := 2         := 8           := 1.8
-dy600ph14    := sample        := DY (HT600-Inf)      := b      := red    := ROOT.kRed-9     := 1001      := 5         := 2         := 8           := 1.8
-eg15ar       := sample        := data (e#gamma 2015A) := d     := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
-j15ar        := sample        := data (jet 2015A)    := d      := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
-qcdbc20ph14  := sample        := QCDe (BC 20-30)     := b      := blue   := ROOT.kBlue+4    := 1001      := 1         := 2         := 8           := 1.8
-qcdbc30ph14  := sample        := QCDe (BC 30-80)     := b      := blue   := ROOT.kBlue+3    := 1001      := 2         := 2         := 8           := 1.8
-qcdbc80ph14  := sample        := QCDe (BC 80-170)    := b      := blue   := ROOT.kBlue+2    := 1001      := 3         := 2         := 8           := 1.8
-qcdbc170ph14 := sample        := QCDe (BC 170-Inf)   := b      := blue   := ROOT.kBlue+1    := 1001      := 4         := 2         := 8           := 1.8
-qcdem20ph14  := sample        := QCDe (EM 20-30)     := b      := blue   := ROOT.kBlue      := 1001      := 5         := 2         := 8           := 1.8
-qcdem30ph14  := sample        := QCDe (EM 30-80)     := b      := blue   := ROOT.kBlue-7    := 1001      := 6         := 2         := 8           := 1.8
-qcdem80ph14  := sample        := QCDe (EM 80-170)    := b      := blue   := ROOT.kBlue-9    := 1001      := 7         := 2         := 8           := 1.8
-qcdem170ph14 := sample        := QCDe (EM 170-Inf)   := b      := blue   := ROOT.kBlue-10   := 1001      := 8         := 2         := 8           := 1.8
-qcdm15ph14   := sample        := QCD#mu (Pt15)       := b      := azure  := ROOT.kAzure+3   := 1001      := 1         := 2         := 8           := 1.8
-qcdm5p30ph14 := sample        := QCD#mu (Pt5/30-50)  := b      := azure  := ROOT.kAzure-6   := 1001      := 2         := 2         := 8           := 1.8
-qcdm5p50ph14 := sample        := QCD#mu (Pt5/50-80)  := b      := azure  := ROOT.kAzure+4   := 1001      := 3         := 2         := 8           := 1.8
-qcdm5p80ph14 := sample        := QCD#mu (Pt5/80-120) := b      := azure  := ROOT.kAzure+9   := 1001      := 4         := 2         := 8           := 1.8
-sm15ar       := sample        := data (single #mu 2015A) := d  := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
-sm15b        := sample        := data (single #mu 2015B) := d  := black  := ROOT.kBlack     := 1001      := 1         := 2         := 8           := 1.8
-sm15c        := sample        := data (single #mu 2015C) := d  := black  := ROOT.kBlack     := 1001      := 1         := 2         := 8           := 1.8
-sm15d        := sample        := data (single #mu 2015D) := d  := black  := ROOT.kBlack     := 1001      := 1         := 2         := 8           := 1.8
-tbschph14    := sample        := #bar{t} (sch)       := b      := green  := ROOT.kGreen+2   := 1001      := 2         := 2         := 8           := 1.8
-tbtchph14    := sample        := #bar{t} (tch)       := b      := green  := ROOT.kGreen+1   := 1001      := 3         := 2         := 8           := 1.8
-tschph14     := sample        := t (sch)             := b      := green  := ROOT.kGreen     := 1001      := 4         := 2         := 8           := 1.8
-ttchph14     := sample        := t (tch)             := b      := green  := ROOT.kGreen-7   := 1001      := 5         := 2         := 8           := 1.8
-tbwph14      := sample        := #bar{t}W            := b      := green  := ROOT.kGreen-9   := 1001      := 6         := 2         := 8           := 1.8
-twph14       := sample        := tW                  := b      := green  := ROOT.kGreen-10  := 1001      := 7         := 2         := 8           := 1.8
-ttph14       := sample        := t#bar{t}            := b      := green  := ROOT.kGreen+3   := 1001      := 1         := 2         := 8           := 1.8
-tthph14      := sample        := t#bar{t}H           := b      := yelow  := ROOT.kYellow+4  := 1001      := 1         := 2         := 8           := 1.8
-ttwph14      := sample        := t#bar{t}W           := b      := yelow  := ROOT.kYellow+3  := 1001      := 2         := 2         := 8           := 1.8
-ttzph14      := sample        := t#bar{t}Z           := b      := yelow  := ROOT.kYellow+2  := 1001      := 3         := 2         := 8           := 1.8
-wph14        := sample        := W                   := b      := orange := ROOT.kOrange+3  := 1001      := 1         := 2         := 8           := 1.8
-w100ph14     := sample        := W (HT100-200)       := b      := orange := ROOT.kOrange+4  := 1001      := 2         := 2         := 8           := 1.8
-w200ph14     := sample        := W (HT200-400)       := b      := orange := ROOT.kOrange+10 := 1001      := 3         := 2         := 8           := 1.8
-w400ph14     := sample        := W (HT400-600)       := b      := orange := ROOT.kOrange+2  := 1001      := 4         := 2         := 8           := 1.8
-w600ph14     := sample        := W (HT600-Inf)       := b      := orange := ROOT.kOrange+8  := 1001      := 5         := 2         := 8           := 1.8
-wzph14       := sample        := WZ                  := b      := yellow := ROOT.kYellow+1  := 1001      := 4         := 2         := 8           := 1.8
-zb115ar      := sample        := data (zero bias 1 2015A) := d := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
-zb215ar      := sample        := data (zero bias 2 2015A) := d := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
-zb315ar      := sample        := data (zero bias 3 2015A) := d := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
-zb415ar      := sample        := data (zero bias 4 2015A) := d := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
-zb515ar      := sample        := data (zero bias 5 2015A) := d := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
-zb615ar      := sample        := data (zero bias 6 2015A) := d := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
-zb715ar      := sample        := data (zero bias 7 2015A) := d := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
-zb815ar      := sample        := data (zero bias 8 2015A) := d := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
-data15       := dataset       := data                := d      := black  := ROOT.kBlack     := 1001      := 1         := 2         := 8           := 1.8
-dy           := dataset       := DY                  := b      := red    := ROOT.kRed+1     := 1001      := 1         := 2         := 8           := 1.8
-qcd          := dataset       := QCD                 := b      := blue   := ROOT.kBlue+4    := 1001      := 1         := 2         := 8           := 1.8
-qcdmu        := dataset       := QCD#mu              := b      := blue   := ROOT.kBlue+3    := 1001      := 2         := 2         := 8           := 1.8
-qcdel        := dataset       := QCDe                := b      := blue   := ROOT.kBlue+2    := 1001      := 3         := 2         := 8           := 1.8
-tt           := dataset       := t#bar{t}            := b      := blue   := ROOT.kBlue+1    := 1001      := 4         := 2         := 8           := 1.8
-tth          := dataset       := t#bar{t)H           := b      := yellow := ROOT.kYellow+4  := 1001      := 1         := 2         := 8           := 1.8
-ttw          := dataset       := t#bar{t)W           := b      := yellow := ROOT.kYellow+3  := 1001      := 2         := 2         := 8           := 1.8
-ttz          := dataset       := t#bar{t)Z           := b      := yellow := ROOT.kYellow+2  := 1001      := 3         := 2         := 8           := 1.8
-t            := dataset       := t                   := b      := blue   := ROOT.kBlue-7    := 1001      := 6         := 2         := 8           := 1.8
-tw           := dataset       := tW                  := b      := blue   := ROOT.kBlue-9    := 1001      := 7         := 2         := 8           := 1.8
-w            := dataset       := W                   := b      := blue   := ROOT.kBlue      := 1001      := 5         := 2         := 8           := 1.8
-ww           := dataset       := WW                  := b      := yellow := ROOT.kYellow+1  := 1001      := 4         := 2         := 8           := 1.8
-wz           := dataset       := WZ                  := b      := yellow := ROOT.kYellow    := 1001      := 5         := 2         := 8           := 1.8
-fakes        := group         := fakes               := b      := blue   := ROOT.kBlue+1    := 1001      := 1         := 2         := 8           := 1.8
-misid        := group         := misId               := b      := red    := ROOT.kRed+1     := 1001      := 1         := 2         := 8           := 1.8
-rares        := group         := rares               := b      := orange := ROOT.kOrange-2  := 1001      := 1         := 2         := 8           := 1.8
-fakes        := gengroupbasic := fakes               := b      := blue   := ROOT.kBlue+1    := 1001      := 1         := 2         := 8           := 1.8
-misid        := gengroupbasic := misid               := b      := red    := ROOT.kRed+1     := 1001      := 1         := 2         := 8           := 1.8
-prompt       := gengroupbasic := prompt              := b      := orange := ROOT.kOrange-2  := 1001      := 1         := 2         := 8           := 1.8
-heavy        := gengroupraw   := heavy               := b      := blue   := ROOT.kBlue-7    := 1001      := 6         := 2         := 8           := 1.8
-light        := gengroupraw   := light               := b      := blue   := ROOT.kBlue-10   := 1001      := 7         := 2         := 8           := 1.8
-misid        := gengroupraw   := misid               := b      := red    := ROOT.kRed+1     := 1001      := 1         := 2         := 8           := 1.8
-prompt       := gengroupraw   := prompt              := b      := orange := ROOT.kOrange-2  := 1001      := 1         := 2         := 8           := 1.8
-b            := gengroupfine  := b                   := b      := blue   := ROOT.kBlue+3    := 1001      := 1         := 2         := 8           := 1.8
-c            := gengroupfine  := c                   := b      := blue   := ROOT.kBlue+2    := 1001      := 2         := 2         := 8           := 1.8
-uds          := gengroupfine  := light               := b      := blue   := ROOT.kBlue      := 1001      := 4         := 2         := 8           := 1.8
-tau          := gengroupfine  := #tau                := b      := blue   := ROOT.kBlue+1    := 1001      := 3         := 2         := 8           := 1.8
-misid        := gengroupfine  := misid               := b      := red    := ROOT.kRed+1     := 1001      := 1         := 2         := 8           := 1.8
-prompt       := gengroupfine  := prompt              := b      := orange := ROOT.kOrange-2  := 1001      := 1         := 2         := 8           := 1.8
-fit1         := custom        := fit                 := b      := black  := ROOT.kGray+1    := 1001      := 2         := 2         := 8           := 1.8
+dmu15a       := sample        := data (double #mu 2015A)  := d      := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
+dyph14       := sample        := DY                       := b      := red    := ROOT.kRed+3     := 1001      := 1         := 2         := 8           := 1.8
+dy100ph14    := sample        := DY (HT100-200)           := b      := red    := ROOT.kRed+2     := 1001      := 2         := 2         := 8           := 1.8
+dy200ph14    := sample        := DY (HT200-400)           := b      := red    := ROOT.kRed+1     := 1001      := 3         := 2         := 8           := 1.8
+dy400ph14    := sample        := DY (HT400-600)           := b      := red    := ROOT.kRed       := 1001      := 4         := 2         := 8           := 1.8
+dy600ph14    := sample        := DY (HT600-Inf)           := b      := red    := ROOT.kRed-9     := 1001      := 5         := 2         := 8           := 1.8
+eg15ar       := sample        := data (e#gamma 2015A)     := d      := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
+j15ar        := sample        := data (jet 2015A)         := d      := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
+qcdbc20ph14  := sample        := QCDe (BC 20-30)          := b      := blue   := ROOT.kBlue+4    := 1001      := 1         := 2         := 8           := 1.8
+qcdbc30ph14  := sample        := QCDe (BC 30-80)          := b      := blue   := ROOT.kBlue+3    := 1001      := 2         := 2         := 8           := 1.8
+qcdbc80ph14  := sample        := QCDe (BC 80-170)         := b      := blue   := ROOT.kBlue+2    := 1001      := 3         := 2         := 8           := 1.8
+qcdbc170ph14 := sample        := QCDe (BC 170-Inf)        := b      := blue   := ROOT.kBlue+1    := 1001      := 4         := 2         := 8           := 1.8
+qcdem20ph14  := sample        := QCDe (EM 20-30)          := b      := blue   := ROOT.kBlue      := 1001      := 5         := 2         := 8           := 1.8
+qcdem30ph14  := sample        := QCDe (EM 30-80)          := b      := blue   := ROOT.kBlue-7    := 1001      := 6         := 2         := 8           := 1.8
+qcdem80ph14  := sample        := QCDe (EM 80-170)         := b      := blue   := ROOT.kBlue-9    := 1001      := 7         := 2         := 8           := 1.8
+qcdem170ph14 := sample        := QCDe (EM 170-Inf)        := b      := blue   := ROOT.kBlue-10   := 1001      := 8         := 2         := 8           := 1.8
+qcdm15ph14   := sample        := QCD#mu (Pt15)            := b      := azure  := ROOT.kAzure+3   := 1001      := 1         := 2         := 8           := 1.8
+qcdm5p30ph14 := sample        := QCD#mu (Pt5/30-50)       := b      := azure  := ROOT.kAzure-6   := 1001      := 2         := 2         := 8           := 1.8
+qcdm5p50ph14 := sample        := QCD#mu (Pt5/50-80)       := b      := azure  := ROOT.kAzure+4   := 1001      := 3         := 2         := 8           := 1.8
+qcdm5p80ph14 := sample        := QCD#mu (Pt5/80-120)      := b      := azure  := ROOT.kAzure+9   := 1001      := 4         := 2         := 8           := 1.8
+sm15ar       := sample        := data (single #mu 2015A)  := d      := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
+tbschph14    := sample        := #bar{t} (sch)            := b      := green  := ROOT.kGreen+2   := 1001      := 2         := 2         := 8           := 1.8
+tbtchph14    := sample        := #bar{t} (tch)            := b      := green  := ROOT.kGreen+1   := 1001      := 3         := 2         := 8           := 1.8
+tschph14     := sample        := t (sch)                  := b      := green  := ROOT.kGreen     := 1001      := 4         := 2         := 8           := 1.8
+ttchph14     := sample        := t (tch)                  := b      := green  := ROOT.kGreen-7   := 1001      := 5         := 2         := 8           := 1.8
+tbwph14      := sample        := #bar{t}W                 := b      := green  := ROOT.kGreen-9   := 1001      := 6         := 2         := 8           := 1.8
+twph14       := sample        := tW                       := b      := green  := ROOT.kGreen-10  := 1001      := 7         := 2         := 8           := 1.8
+ttph14       := sample        := t#bar{t}                 := b      := green  := ROOT.kGreen+3   := 1001      := 1         := 2         := 8           := 1.8
+tthph14      := sample        := t#bar{t}H                := b      := yelow  := ROOT.kYellow+4  := 1001      := 1         := 2         := 8           := 1.8
+ttwph14      := sample        := t#bar{t}W                := b      := yelow  := ROOT.kYellow+3  := 1001      := 2         := 2         := 8           := 1.8
+ttzph14      := sample        := t#bar{t}Z                := b      := yelow  := ROOT.kYellow+2  := 1001      := 3         := 2         := 8           := 1.8
+wph14        := sample        := W                        := b      := orange := ROOT.kOrange+3  := 1001      := 1         := 2         := 8           := 1.8
+w100ph14     := sample        := W (HT100-200)            := b      := orange := ROOT.kOrange+4  := 1001      := 2         := 2         := 8           := 1.8
+w200ph14     := sample        := W (HT200-400)            := b      := orange := ROOT.kOrange+10 := 1001      := 3         := 2         := 8           := 1.8
+w400ph14     := sample        := W (HT400-600)            := b      := orange := ROOT.kOrange+2  := 1001      := 4         := 2         := 8           := 1.8
+w600ph14     := sample        := W (HT600-Inf)            := b      := orange := ROOT.kOrange+8  := 1001      := 5         := 2         := 8           := 1.8
+wzph14       := sample        := WZ                       := b      := yellow := ROOT.kYellow+1  := 1001      := 4         := 2         := 8           := 1.8
+zb115ar      := sample        := data (zero bias 1 2015A) := d      := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
+zb215ar      := sample        := data (zero bias 2 2015A) := d      := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
+zb315ar      := sample        := data (zero bias 3 2015A) := d      := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
+zb415ar      := sample        := data (zero bias 4 2015A) := d      := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
+zb515ar      := sample        := data (zero bias 5 2015A) := d      := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
+zb615ar      := sample        := data (zero bias 6 2015A) := d      := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
+zb715ar      := sample        := data (zero bias 7 2015A) := d      := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
+zb815ar      := sample        := data (zero bias 8 2015A) := d      := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
+data15       := dataset       := data                     := d      := black  := ROOT.kBlack     := 1001      := 1         := 2         := 8           := 1.8
+dy           := dataset       := DY                       := b      := red    := ROOT.kRed+1     := 1001      := 1         := 2         := 8           := 1.8
+qcd          := dataset       := QCD                      := b      := blue   := ROOT.kBlue+4    := 1001      := 1         := 2         := 8           := 1.8
+qcdmu        := dataset       := QCD#mu                   := b      := blue   := ROOT.kBlue+3    := 1001      := 2         := 2         := 8           := 1.8
+qcdel        := dataset       := QCDe                     := b      := blue   := ROOT.kBlue+2    := 1001      := 3         := 2         := 8           := 1.8
+tt           := dataset       := t#bar{t}                 := b      := blue   := ROOT.kBlue+1    := 1001      := 4         := 2         := 8           := 1.8
+tth          := dataset       := t#bar{t)H                := b      := yellow := ROOT.kYellow+4  := 1001      := 1         := 2         := 8           := 1.8
+ttw          := dataset       := t#bar{t)W                := b      := yellow := ROOT.kYellow+3  := 1001      := 2         := 2         := 8           := 1.8
+ttz          := dataset       := t#bar{t)Z                := b      := yellow := ROOT.kYellow+2  := 1001      := 3         := 2         := 8           := 1.8
+t            := dataset       := t                        := b      := blue   := ROOT.kBlue-7    := 1001      := 6         := 2         := 8           := 1.8
+tw           := dataset       := tW                       := b      := blue   := ROOT.kBlue-9    := 1001      := 7         := 2         := 8           := 1.8
+w            := dataset       := W                        := b      := blue   := ROOT.kBlue      := 1001      := 5         := 2         := 8           := 1.8
+ww           := dataset       := WW                       := b      := yellow := ROOT.kYellow+1  := 1001      := 4         := 2         := 8           := 1.8
+wz           := dataset       := WZ                       := b      := yellow := ROOT.kYellow    := 1001      := 5         := 2         := 8           := 1.8
+fakes        := group         := fakes                    := b      := blue   := ROOT.kBlue+1    := 1001      := 1         := 2         := 8           := 1.8
+misid        := group         := misId                    := b      := red    := ROOT.kRed+1     := 1001      := 1         := 2         := 8           := 1.8
+rares        := group         := rares                    := b      := orange := ROOT.kOrange-2  := 1001      := 1         := 2         := 8           := 1.8
+fakes        := gengroupbasic := fakes                    := b      := blue   := ROOT.kBlue+1    := 1001      := 1         := 2         := 8           := 1.8
+misid        := gengroupbasic := misid                    := b      := red    := ROOT.kRed+1     := 1001      := 1         := 2         := 8           := 1.8
+prompt       := gengroupbasic := prompt                   := b      := orange := ROOT.kOrange-2  := 1001      := 1         := 2         := 8           := 1.8
+heavy        := gengroupraw   := heavy                    := b      := blue   := ROOT.kBlue-7    := 1001      := 6         := 2         := 8           := 1.8
+light        := gengroupraw   := light                    := b      := blue   := ROOT.kBlue-10   := 1001      := 7         := 2         := 8           := 1.8
+misid        := gengroupraw   := misid                    := b      := red    := ROOT.kRed+1     := 1001      := 1         := 2         := 8           := 1.8
+prompt       := gengroupraw   := prompt                   := b      := orange := ROOT.kOrange-2  := 1001      := 1         := 2         := 8           := 1.8
+b            := gengroupfine  := b                        := b      := blue   := ROOT.kBlue+3    := 1001      := 1         := 2         := 8           := 1.8
+c            := gengroupfine  := c                        := b      := blue   := ROOT.kBlue+2    := 1001      := 2         := 2         := 8           := 1.8
+uds          := gengroupfine  := light                    := b      := blue   := ROOT.kBlue      := 1001      := 4         := 2         := 8           := 1.8
+tau          := gengroupfine  := #tau                     := b      := blue   := ROOT.kBlue+1    := 1001      := 3         := 2         := 8           := 1.8
+misid        := gengroupfine  := misid                    := b      := red    := ROOT.kRed+1     := 1001      := 1         := 2         := 8           := 1.8
+prompt       := gengroupfine  := prompt                   := b      := orange := ROOT.kOrange-2  := 1001      := 1         := 2         := 8           := 1.8
+fit1         := custom        := fit                      := b      := black  := ROOT.kGray+1    := 1001      := 2         := 2         := 8           := 1.8
 
 

@@ -32,6 +32,8 @@ def run(scheme, name, schemes = [], alist = args.args("")):
 	elif scheme == "sub"   : return sub   (name, schemes, alist)
 	elif scheme == "tfit"  : return tfit  (name, schemes, alist)
 
+	
+
 
 ## add
 ##---------------------------------------------------------------
@@ -170,8 +172,14 @@ def comp(name, schemes, alist):
 			if alist.has("ratio") and alist.get("ratio") == "y":
 				schemes[0].mypaf.pads[1].cd()
 
+				hmin = 0.
+				hmax = 0.
+
+				if alist.has("rmin"): hmin = float(alist.get("rmin"))
+				if alist.has("rmax"): hmax = float(alist.get("rmax"))
+
 				hr.Divide(hline[1].getH(d[i][j][0], d[i][j][1]))
-				hr = rstuff.setRatioStyle(hr, l[i][j][0], l[i][j][1], hline[0].labels[0])
+				hr = rstuff.setRatioStyle(hr, l[i][j][0], l[i][j][1], hline[0].labels[0], hmin, hmax)
 				hr.Draw("pe")
 
 				line = rstuff.line(hr.GetXaxis().GetXmin(), 1.00, hr.GetXaxis().GetXmax(), 1.00)

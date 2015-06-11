@@ -197,9 +197,11 @@ def ratiopad(name = 'pr', x1 = 0.0, y1 = 0.0, x2 = 1.0, y2 = 0.28):
 
 ## setRatioStyle
 ##---------------------------------------------------------------
-def setRatioStyle(hist, name1, name2, xlabel):
+def setRatioStyle(hist, name1, name2, xlabel, hmin = 0., hmax = 0.):
 
-	hmin, hmax = lib.getHistMinMax(hist.GetMinimum(0.0), hist.GetMaximum(), False)
+	h1min, h1max = lib.getHistMinMax(hist.GetMinimum(0.0), hist.GetMaximum(), False)
+	if hmin == 0.: hmin = 0.9*h1min
+	if hmax == 0.: hmax = 1.1*h1max
 	factor = lib.getPadSize(ROOT.gPad)
 
 	hist.SetLineColor(ROOT.kBlack)
@@ -217,7 +219,7 @@ def setRatioStyle(hist, name1, name2, xlabel):
 	hist.GetYaxis().SetTitleSize(0.045 / factor)
 	#hist.GetYaxis().SetTitleOffset(factor)
 	hist.GetYaxis().SetTitleOffset(factor)
-	hist.GetYaxis().SetRangeUser(hmin * 0.9, hmax * 1.1)
+	hist.GetYaxis().SetRangeUser(hmin, hmax)
 
 	hist.GetXaxis().SetNdivisions(505)
 	hist.GetXaxis().SetTitle(xlabel)

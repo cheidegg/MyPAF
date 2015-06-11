@@ -9,7 +9,7 @@
 #################################################################
 #################################################################
 
-import ROOT
+import ROOT, sys
 import args, clist, dbreader, objcoll, hscheme, lib, mypaf, vb
 
 
@@ -94,10 +94,11 @@ class output:
 
 			self.objcoll.addHist(var.name, binargs, labels, var.argstring, self.mypaf.input.sources, categories)
 			if var.type == "plot": self.objcoll.setHistP(var.name)
+			del alist
 
 
 		## build the histogram collection
-		self.objcoll.build()
+		#self.objcoll.build()
 
 
 	## buildHist
@@ -157,8 +158,8 @@ class output:
 			self.objcoll.addHist(var.name, binargs, names, var.argstring, [source], categories)
 			if var.type == "plot": self.objcoll.setHistP(var.name) 
 			del alist
-
 	## WHAT TO DO ABOUT GEN INFO?
+
 
 
 	## buildScan

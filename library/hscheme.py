@@ -84,6 +84,8 @@ class hscheme:
 				for scheme in self.schemes:
 					scheme.getHist().loadInitial()
 
+			self.mypaf.resetCanv()
+
 
 	## check
 	##---------------------------------------------------------------

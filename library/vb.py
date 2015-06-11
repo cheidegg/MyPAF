@@ -29,7 +29,7 @@ class vb:
 	def __init__(self, mypaf, setvb):
 
 		self.mypaf = mypaf
-		self.path  = mypaf.prodpath
+		self.path  = mypaf.temppath # we're in a pickle, first call vb and then input or the other way around?
 		self.vb    = setvb
 		self.log   = open(self.path + "log.out", "a")
 
@@ -47,6 +47,16 @@ class vb:
 	##---------------------------------------------------------------
 	def error(self, message):
 		self.talk("ERROR: " + message, True)
+
+
+	## move
+	##--------------------------------------------------------------- 
+	def move(self):
+
+		self.log.close()
+		os.system("mv " + self.path + "log.out " + self.mypaf.prodpath + "log.out")
+		self.path = self.mypaf.prodpath
+		self.log  = open(self.path + "log.out", "a")
 
 
 	## start
