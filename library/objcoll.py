@@ -40,23 +40,38 @@ class objcoll:
 
 	## addEffMap
 	##---------------------------------------------------------------
-	def addEffMap(self, name, definition, argstring = ""):
+	def addEffMap(self, name, definition, argstring = "", sources = [], categories = []):
 
 		self.effmaps.append(effmap.effmap(self.mypaf, name, definition, argstring))
+
+		if sources != [] and categories != []:
+			self.effmaps[-1].build(sources, categories)
+			self.sources  .extend(sources)
+			self.categories = categories
 
 
 	## addEvList
 	##---------------------------------------------------------------
-	def addEvList(self, name, variables, argstring = ""):
+	def addEvList(self, name, variables, argstring = "", sources = [], categories = []):
 
 		self.evlists.append(evlist.evlist(self.mypaf, name, variables, argstring))
+
+		if sources != [] and categories != []:
+			self.evlists[-1].build(sources, categories)
+			self.sources  .extend(sources)
+			self.categories = categories
 
 
 	## addEvYield
 	##---------------------------------------------------------------
-	def addEvYield(self, name, variable, argstring = ""):
+	def addEvYield(self, name, variable, argstring = "", sources = [], categories = []):
 
 		self.evyields.append(evyield.evyield(self.mypaf, name, variable, argstring))
+
+		if sources != [] and categories != []:
+			self.evyields[-1].build(sources, categories)
+			self.sources  .extend(sources)
+			self.categories = categories
 
 
 	## addHist
@@ -73,16 +88,26 @@ class objcoll:
 
 	## addObList
 	##---------------------------------------------------------------
-	def addObList(self, objname, name, variables, argstring = ""):
+	def addObList(self, objname, name, variables, argstring = "", sources = [], categories = []):
 
 		self.oblists.append(oblist.oblist(self.mypaf, objname, name, variables, argstring))
+
+		if sources != [] and categories != []:
+			self.oblists[-1].build(sources, categories)
+			self.sources  .extend(sources)
+			self.categories = categories
 
 
 	## addObYield
 	##---------------------------------------------------------------
-	def addObYield(self, objname, name, variable, argstring = ""):
+	def addObYield(self, objname, name, variable, argstring = "", sources = [], categories = []):
 
 		self.obyields.append(obyield.obyield(self.mypaf, objname, name, variable, argstring))
+
+		if sources != [] and categories != []:
+			self.obyields[-1].build(sources, categories)
+			self.sources  .extend(sources)
+			self.categories = categories
 
 
 	## build

@@ -37,6 +37,7 @@ w200ph14     := sample        := W (HT200-400)            := b      := orange :=
 w400ph14     := sample        := W (HT400-600)            := b      := orange := ROOT.kOrange+2  := 1001      := 4         := 2         := 8           := 1.8
 w600ph14     := sample        := W (HT600-Inf)            := b      := orange := ROOT.kOrange+8  := 1001      := 5         := 2         := 8           := 1.8
 wzph14       := sample        := WZ                       := b      := yellow := ROOT.kYellow+1  := 1001      := 4         := 2         := 8           := 1.8
+zb15ar       := sample        := data (zero bias 2015A)   := d      := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
 zb115ar      := sample        := data (zero bias 1 2015A) := d      := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
 zb215ar      := sample        := data (zero bias 2 2015A) := d      := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8
 zb315ar      := sample        := data (zero bias 3 2015A) := d      := black  := ROOT.kBlack     := 0         := 1         := 2         := 8           := 1.8

@@ -120,16 +120,17 @@ class hscheme:
 	##---------------------------------------------------------------
 	def isPrimary(self):
 
-		if self.isTrivial()   : return True
+		if self.isTrivial()     : return True
 
-		if self.type == "add" : return True
-		if self.type == "div" : return True
-		if self.type == "draw": return True
-		#if self.type == "ffit": return True
-		if self.type == "mult": return True
-		if self.type == "proj": return True
-		if self.type == "sub" : return True
-		#if self.type == "tfit": return True
+		if self.type == "add"   : return True
+		if self.type == "div"   : return True
+		if self.type == "draw"  : return True
+		#if self.type == "ffit"  : return True
+		if self.type == "filter": return True
+		if self.type == "mult"  : return True
+		if self.type == "proj"  : return True
+		if self.type == "sub"   : return True
+		#if self.type == "tfit"  : return True
 
 		return False
 

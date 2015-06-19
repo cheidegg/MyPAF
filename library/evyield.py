@@ -38,7 +38,7 @@ class evyield:
 		self.sources = sources
 		self.categs  = categs
 
-		self.yields = [[0. for sidx in range(len(sources))] for cidx in range(len(categs))]
+		self.yields = [[0. for cidx in range(len(categs))] for sidx in range(len(sources))]
 		self.built  = True
 
 

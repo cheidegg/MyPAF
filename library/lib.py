@@ -208,11 +208,47 @@ def findElmAttrAll(list, attribute, value):
 	return result
 
 
+## formatStr
+##---------------------------------------------------------------
+def formatStr(string, length = 0, append = 0):
+	## adds whitespaces to a string in order to achieve the desired length
+	## append = 0: add the whitespaces left to the string
+	##        = 1: add the whitespaces right to the string
+	##        = 2: add the whitespaces equally left and right to the string
+
+	if length == 0         : return string
+	if length < len(string): return string
+
+	if   append == 0: return "".join([" " for i in range(length - len(string))]) + string
+	elif append == 1: return string + "".join([" " for i in range(length - len(string))])
+	elif append == 2: return "".join([" " for i in range((length - len(string)) / 2)]) + string + "".join([" " for i in range((length - len(string)) / 2)])
+
+	return string
+
+
 ## getAllFiles
 ##---------------------------------------------------------------
 def getAllFiles(path):
 
 	return [path + f for f in os.listdir(path) if os.path.isfile(path + f)]
+
+
+## getColWidths
+##---------------------------------------------------------------
+def getColWidths(matrix = []):
+
+	if len(matrix)    == 0: return []
+	if len(matrix[0]) == 0: return []
+
+	print matrix
+	widths = [0 for i in range(len(matrix[0]))]
+
+	for row in matrix:
+		for i, col in enumerate(row):
+			if len(col.strip()) > widths[i]:
+				widths[i] = len(col.strip())
+
+	return widths
 
 
 ## getDType
