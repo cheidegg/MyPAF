@@ -299,9 +299,13 @@ class mypaf:
 		for i, sam in enumerate(self.input.cfg.getObjs("region=='input' and type=='tree'")):
 
 			alist = args.args(sam.argstring)
+			#samp  = sample.sample(self, sam.name, \
+			#                            lib.usePath(self.inputpath, self.input.cfg.getVar("inputdir"), sam.definition, alist.get("dir")), \
+			#                            lib.useVal("tree", self.input.cfg.getVar("inputtree"), alist.get("tree")))
 			samp  = sample.sample(self, sam.name, \
-			                            lib.usePath(self.inputpath, self.input.cfg.getVar("inputdir"), sam.definition, alist.get("dir")), \
-			                            lib.useVal("tree", self.input.cfg.getVar("inputtree"), alist.get("tree"))) 
+			                            sam.definition, \
+			                            lib.useVal("tree", self.input.cfg.getVar("inputtree"), alist.get("tree")), \
+			                            alist.get("dir"))
 			samp.load()
 			t    = samp.tree
 			sidx = sam.source
@@ -428,8 +432,9 @@ class mypaf:
 
 			alist = args.args(sam.argstring)
 			samp  = sample.sample(self, sam.name, \
-			                            lib.usePath(self.inputpath, self.input.cfg.getVar("inputdir"), sam.definition, alist.get("dir")), \
-			                            lib.useVal("tree", self.input.cfg.getVar("inputtree"), alist.get("tree"))) 
+			                            sam.definition, \
+			                            lib.useVal("tree", self.input.cfg.getVar("inputtree"), alist.get("tree")), \
+			                            alist.get("dir"))
 			samp.load()
 			t    = samp.tree
 			sidx = sam.source
@@ -484,9 +489,13 @@ class mypaf:
 		for i, sam in enumerate(self.input.cfg.getObjs("region=='input' and type=='tree'")):
 
 			alist = args.args(sam.argstring)
+			#samp  = sample.sample(self, sam.name, \
+			#                            lib.usePath(self.inputpath, self.input.cfg.getVar("inputdir"), sam.definition, alist.get("dir")), \
+			#                            lib.useVal("tree", self.input.cfg.getVar("inputtree"), alist.get("tree"))) 
 			samp  = sample.sample(self, sam.name, \
-			                            lib.usePath(self.inputpath, self.input.cfg.getVar("inputdir"), sam.definition, alist.get("dir")), \
-			                            lib.useVal("tree", self.input.cfg.getVar("inputtree"), alist.get("tree"))) 
+			                            sam.definition, \
+			                            lib.useVal("tree", self.input.cfg.getVar("inputtree"), alist.get("tree")), \
+			                            alist.get("dir"))
 			samp.load()
 			t    = samp.tree
 			sidx = sam.source

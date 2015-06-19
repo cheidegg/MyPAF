@@ -50,8 +50,11 @@ class evlist:
 		self.sources = sources
 		self.categs  = categs
 
-		self.paths   = [[self.mypaf.prodpath + "evlist_" + self.name + "_" + str(sidx) + "_" + str(cidx) + ".txt" for sidx in range(len(sources))] for cidx in range(len(categs))]
-		self.files   = [[open(self.paths[sidx][cidx], "a") for sidx in range(len(sources))] for cidx in range(len(categs))]
+		print self.sources
+		print self.categs
+
+		self.paths   = [[self.mypaf.prodpath + "evlist_" + self.name + "_" + str(sidx) + "_" + str(cidx) + ".txt" for cidx in range(len(categs))] for sidx in range(len(sources))]
+		self.files   = [[open(self.paths[sidx][cidx], "a") for cidx in range(len(categs))] for sidx in range(len(sources))]
 		self.built   = True
 
 
@@ -120,7 +123,7 @@ class evlist:
 
 		f = open(path, "r")
 		full = f.readlines()
-		cols = lib.getColWidths(full)
+		#cols = lib.getColWidths(full)
 		f.close()
 		assoc = [i for i in range(len(self.vars))]
 
@@ -134,7 +137,8 @@ class evlist:
 
 		for line in full[3:len(full)-1]:
 			elm = line.split("*")[1:len(line.split("*"))-1]
-			nl = [lib.formatStr(elm[assoc[i]].strip(), cols[i]) for i in range(len(elm))]
+			nl = [elm[assoc[i]].strip() for i in range(len(elm))]
+			#nl = [lib.formatStr(elm[assoc[i]].strip(), cols[i]) for i in range(len(elm))]
 			self.files[sidx][cidx].write(":=".join(nl) + "\n")
 
 

@@ -49,8 +49,8 @@ class oblist:
 		self.sources = sources
 		self.categs  = categs
 
-		self.paths   = [[self.mypaf.temppath + "oblist_" + self.name + "_" + str(sidx) + "_" + str(cidx) + ".txt" for sidx in range(len(sources))] for cidx in range(len(categs))]
-		self.files   = [[open(self.paths[sidx][cidx], "a") for sidx in range(len(sources))] for cidx in range(len(categs))]
+		self.paths   = [[self.mypaf.temppath + "oblist_" + self.name + "_" + str(sidx) + "_" + str(cidx) + ".txt" for cidx in range(len(categs))] for sidx in range(len(sources))]
+		self.files   = [[open(self.paths[sidx][cidx], "a") for cidx in range(len(categs))] for sidx in range(len(sources))]
 		self.built   = True
 
 
@@ -125,12 +125,14 @@ class oblist:
 		lib.rmFile(self.paths[sidx][cidx])
 		self.files[sidx][cidx] = open(self.paths[sidx][cidx], "a")
 		
-		for i, head in enumerate(full[1].split("*")[1:]):
+		for i, head in enumerate([entry.strip() for entry in full[1].strip("\n").split("*")[1:len(full[1].split("*"))-1]]):
 			j = lib.findElm(self.vars, head.strip())
 			assoc[i] = j
 		
-		for line in full[3:]:
-			nl = [elm[assoc[i]].strip() for i in range(len(line.split("*")[1:]))]
+		for line in full[3:len(full)-1]:
+			elm = line.split("*")[1:len(line.split("*"))-1]
+			nl = [elm[assoc[i]].strip() for i in range(len(elm))]
+			#nl = [elm[assoc[i]].strip() for i in range(len(line.split("*")[1:]))]
 			self.files[sidx][cidx].write(":=".join(nl) + "\n")
 	
 

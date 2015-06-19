@@ -10,7 +10,7 @@
 #################################################################
 
 import ROOT
-import mypaf
+import cfg, input, lib, mypaf
 
 
 ## sample
@@ -35,16 +35,18 @@ class sample:
 
 	## __init__
 	##--------------------------------------------------------------- 
-	def __init__(self, mypaf, name, path, treename = "tree"):
+	def __init__(self, mypaf, name, definition, treename = "tree", dirname = ""):
 
 		self.mypaf = mypaf
 		self.db    = mypaf.db
 		self.vb    = mypaf.vb
 
-		if path[0] != "/" and path.find("dcap://") == -1 and path.find("root://") == -1: path = mypaf.inputpath + path
+		self.paths = [lib.usePath(self.mypaf.inputpath, self.mypaf.input.cfg.getVar("inputdir"), p, dirname) for p in definition.split()]
+
+		#if path[0] != "/" and path.find("dcap://") == -1 and path.find("root://") == -1: path = mypaf.inputpath + path
 
 		self.name = name
-		self.path = path
+		#self.path = path
 		self.treename = treename
 		
 		#self.load()
@@ -69,9 +71,15 @@ class sample:
 	def load(self):
 		## loads and opens the TFile and TTree
 
-		self.file     = ROOT.TFile.Open(self.path, "read")
-		self.tree     = self.file.Get(self.treename)
-		self.nentries = self.tree.GetEntries()
+		self.tree     = ROOT.TChain(self.treename)
+		for p in self.paths:
+			self.tree.Add(p)
+
+		#self.file     = ROOT.TFile.Open(self.paths[0], "read")
+		#self.tree     = self.file.Get(self.treename)
+		#self.nentries = self.tree.GetEntries()
+
+		
 
 
 	## setDbParams
