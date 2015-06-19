@@ -49,7 +49,7 @@ class oblist:
 		self.sources = sources
 		self.categs  = categs
 
-		self.paths   = [[self.mypaf.temppath + "oblist_" + self.name + "_" + str(sidx) + "_" + str(cidx) + ".txt" for cidx in range(len(categs))] for sidx in range(len(sources))]
+		self.paths   = [[self.mypaf.temppath + "oblist_" + self.name + "_" + self.sources[sidx] + "_" + self.categs[cidx] + ".txt" for cidx in range(len(categs))] for sidx in range(len(sources))]
 		self.files   = [[open(self.paths[sidx][cidx], "a") for cidx in range(len(categs))] for sidx in range(len(sources))]
 		self.built   = True
 
@@ -91,8 +91,9 @@ class oblist:
 		## returns the content of the object list as a string in readable form
 
 		self.close()
-		text = " : ".join(variables)
-		texts = [[text for sidx in range(len(self.sources))] for cidx in range(len(self.categs))]
+		text = " : ".join(self.vars) + "\n"
+		text += "\n"
+		texts = [[text for cidx in range(len(self.categs))] for sidx in range(len(self.sources))]
 
 		for sidx in range(len(self.sources)):
 			for cidx in range(len(self.categs)):
@@ -119,21 +120,25 @@ class oblist:
 		f = open(path, "r")
 		full = f.readlines()
 		f.close()
-		assoc = [i for i in range(len(self.vars))]
-		
+
+		#assoc = [i for i in range(len(self.vars))]
+		#header = []
+
 		self.files[sidx][cidx].close()
 		lib.rmFile(self.paths[sidx][cidx])
 		self.files[sidx][cidx] = open(self.paths[sidx][cidx], "a")
 		
-		for i, head in enumerate([entry.strip() for entry in full[1].strip("\n").split("*")[1:len(full[1].split("*"))-1]]):
-			j = lib.findElm(self.vars, head.strip())
-			assoc[i] = j
+		#for i, head in enumerate([entry.strip() for entry in full[1].strip("\n").split("*")[1:len(full[1].split("*"))-1]]):
+		#	j = lib.findElm(self.vars, head.strip())
+		#	assoc[i] = j
+		#	header.append(self.vars[j])
+
+		#self.files[sidx][cidx].write(" : ".join(header) + "\n\n")
+		self.files[sidx][cidx].write(" : ".join(self.vars) + "\n\n")
 		
 		for line in full[3:len(full)-1]:
-			elm = line.split("*")[1:len(line.split("*"))-1]
-			nl = [elm[assoc[i]].strip() for i in range(len(elm))]
-			#nl = [elm[assoc[i]].strip() for i in range(len(line.split("*")[1:]))]
-			self.files[sidx][cidx].write(":=".join(nl) + "\n")
+			nl = [elm[i].strip() for i in range(len(line.split("*")[1:len(line.split("*"))-1]))]
+			self.files[sidx][cidx].write(" : ".join(nl) + "\n")
 	
 
 

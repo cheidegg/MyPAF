@@ -230,6 +230,23 @@ def ffit(name, schemes, alist):
 	return True
 
 
+## filter
+##---------------------------------------------------------------
+def filter(name, schemes, alist):
+
+	if len(schemes) == 1 and alist.has("cut"):
+		h1 = hist.hist(schemes[0].mypaf, name, schemes[0].getHist().binargs, "")
+		h1.reinit(schemes[0].getHist())
+		h1.injectHist(schemes[0].getHist())
+		h1.setArgs(alist.argstring)
+		for sidx in range(len(h1.schemes)):
+			for cidx in range(len(h1.categs)):
+				for i in range(1,h1.getH(sidx, cidx).GetNbins()):
+					if not eval("h1.getH(sidx, cidx).GetBinContent(" + i + ") " + alist.get("cut")):
+						h1.getH(sidx, cidx).SetBinContent(i, 0)
+		return h1
+
+
 ## mult
 ##---------------------------------------------------------------
 def mult(name, schemes, alist):

@@ -112,11 +112,12 @@ CONFIGURATION:
   - systematics  : default is n
   - format: name := value
 * selection
-  - variables and cuts as used in TTree::Draw
-  - access files (root hists) by: FILE[path]::variable::sample::bin
-  - access histograms (root)  by: HIST[path]::canvas::histogram::bin
-  - access event lists        by: EVENTLIST[path]
-  - access object lists       by: OBJECTLIST[path]
+  - tree:   variables and cuts as used in TTree::Draw
+  - hist:   histogram bins must pass threshold: bins <=> <value>
+  - file:   access files (root hists) by: FILE[path]::variable::sample::bin
+  - root:   access histograms (root)  by: HIST[path]::canvas::histogram::bin
+  - evlist: access event lists        by: EVENTLIST[path]
+  - oblist: access object lists       by: OBJECTLIST[path]
   - format: type := name := definition := arguments
   - type: tree, file, root, evlist, oblist
   - args: obj

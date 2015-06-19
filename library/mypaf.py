@@ -9,8 +9,8 @@
 #################################################################
 #################################################################
 
-import array, datetime, inspect, ROOT
-import args, cfg, clist, dbreader, input, lib, objcoll, output, parser, rstuff, sample, vb
+import array, copy, datetime, inspect, ROOT
+import args, cfg, clist, dbreader, input, lib, objcoll, output, parser, rstuff, sample, sel, vb
 
 
 ## mypaf
@@ -28,18 +28,20 @@ class mypaf:
 	canvas.Update()
 	pads[0].cd()
 
-	imodule    = -1
-	module     = ""
-	#path       = "/Users/conni/Computing/MyPAF/"
-	path       = "/shome/cheidegg/p/MyPAF/"
-	prod       = ""
+	imodule       = -1
+	module        = ""
+	#path          = "/Users/conni/Computing/MyPAF/"
+	path          = "/shome/cheidegg/p/MyPAF/"
+	prod          = ""
 
-	cfgpath    = path + "cfg/"
-	dbpath     = path + "db/"
-	inputpath  = path + "input/"
-	outputpath = path + "output/"
-	prodpath   = path + "output/" 
-	temppath   = path + "temp/"
+	cfgpath       = path + "cfg/"
+	dbpath        = path + "db/"
+	inputpath     = path + "input/"
+	outputpath    = path + "output/"
+	prodpath      = path + "output/" 
+	temppath      = path + "temp/"
+	templatepath  = path + "templates/"
+	templateindex = templatepath + "index.php"
 
 
 	## __init__
@@ -102,6 +104,7 @@ class mypaf:
 	##---------------------------------------------------------------
 	def close(self):
 
+		lib.copyFile(self.templateindex, self.prodpath)
 		lib.copyFile(self.input.cfg.path, self.prodpathmypaf)
 		for dbfpath in lib.getAllFiles(self.dbpath):
 			lib.copyFile(dbfpath, self.prodpathmypaf)
@@ -316,9 +319,10 @@ class mypaf:
 				valist = args.args(var.argstring)
 
 				## loop over selection
-				for cidx, sel in enumerate(self.findSelections(["tree"], valist)):
+				for cidx, csel in enumerate(self.findSelections(["tree"], valist)):
 
 					vdef = var.definition.split("::")
+					ssel = sel.sel(csel.definition)
 
 					dim  = self.output.objcoll.getHistDim (var.name)
 					bins = self.output.objcoll.getHistBins(var.name)
@@ -330,8 +334,28 @@ class mypaf:
 					                                                   len(bins[2].list)-1, array.array('d', bins[2].list))
 					else:          htemp = ROOT.TH1F("htemp", "htemp", len(bins[0].list)-1, array.array('d', bins[0].list))
 
-					if len(vdef) == 2: num = t.Draw(vdef[0] + ">>htemp", vdef[1], sel.definition) ## weight given
-					else             : num = t.Draw(vdef[0] + ">>htemp",          sel.definition) ## weight set to 1
+					if len(vdef) == 2: num = t.Draw(vdef[0] + ">>htemp", vdef[1], ssel.string) ## weight given
+					else             : num = t.Draw(vdef[0] + ">>htemp",          ssel.string) ## weight set to 1
+
+					## underflow bin
+					if dim == 1 and valist.get("ufb").find("x") != -1:
+						ssel.addAnd(vdef[0] + "<" + str(bins[0].list[0]))
+						htemp2 = copy.deepcopy(htemp) ##CH: totally ugly but t.Draw will overwrite htemp :-(
+						if len(vdef) == 2: ufb = t.Draw(vdef[0], vdef[1], ssel.string)
+						else             : ufb = t.Draw(vdef[0],          ssel.string)
+						htemp = htemp2
+						del htemp2
+						htemp.SetBinContent(1, htemp.GetBinContent(1) + ufb)
+
+					## overflow bin
+					if dim == 1 and valist.get("ofb").find("x") != -1:
+						ssel.addAnd(vdef[0] + ">" + str(bins[0].list[-1]))
+						htemp2 = copy.deepcopy(htemp) ##CH: totally ugly but t.Draw will overwrite htemp :-(
+						if len(vdef) == 2: ofb = t.Draw(vdef[0], vdef[1], ssel.string)
+						else             : ofb = t.Draw(vdef[0],          ssel.string)
+						htemp = htemp2
+						del htemp2
+						htemp.SetBinContent(len(bins[0].list)-1, htemp.GetBinContent(len(bins[0].list)-1) + ofb)
 
 					self.vb.talk("Drawing " + str(num) + " entries into " + var.name + ".")
 					htemp.Scale(self.findScale(alist))
@@ -343,38 +367,6 @@ class mypaf:
 
 		self.output.objcoll.setInitial()
 
-
-		#for i, sample in enumerate(self.input.samples):
-
-		#	sample.load()
-		#	t = sample.tree
-
-		#	sidx = i
-		#	if self.input.cfg.getVar("head", "dataset") == "y":
-		#		sidx = lib.findElmAttr(self.input.datasets, \
-		#		                       "name", \
-		#		                       self.db.getColumn("samples", "name=='" + sample.name + "'", "dataset"))
-
-		#	for var in self.input.output:
-		#		for cidx, sel in enumerate(self.input.selection):
-
-		#			dim  = self.output.objcoll.getHistDim(var[1])
-		#			bins = self.output.objcoll.getHistBins(var[1])
-		#			      
-		#			if   dim == 2: htemp = ROOT.TH2F("htemp", "htemp", len(bins[0].list)-1, array.array('d', bins[0].list), \
-		#			                                                   len(bins[1].list)-1, array.array('d', bins[1].list))
-		#			elif dim == 3: htemp = ROOT.TH3F("htemp", "htemp", len(bins[0].list)-1, array.array('d', bins[0].list), \
-		#			                                                   len(bins[1].list)-1, array.array('d', bins[1].list), \
-		#			                                                   len(bins[2].list)-1, array.array('d', bins[2].list))
-		#			else:          htemp = ROOT.TH1F("htemp", "htemp", len(bins[0].list)-1, array.array('d', bins[0].list))
-
-		#			t.Draw(var[2] + ">>htemp", sel[2])
-		#			#htemp.Print()
-		#			self.output.objcoll.injectHist(var[1], htemp, sidx, cidx)
-		#			htemp.Delete()
-		#			del htemp
-
-		#self.output.objcoll.setInitial()
 
 
 	## runHist
@@ -443,7 +435,9 @@ class mypaf:
 			t.GetPlayer().SetScanFileName(self.temppath + "templist.txt")
 
 			for j, var in enumerate(objlist):
-				for cidx, sel in enumerate(self.input.cfg.getObjs("region=='selection' and (type=='none' or type=='tree')")):
+				valist = args.args(var.argstring)
+
+				for cidx, sel in enumerate(self.findSelections(["tree"], valist)):
 					num = t.Scan(tvrun + ":" + tvlumi + ":" + tvevt + ":" + var.definition, sel.definition) 
 					if   var.type == "evlist":
 						self.output.objcoll.getEvList (var.name).injectScanFile(sidx, cidx, self.temppath + "templist.txt")
@@ -456,26 +450,6 @@ class mypaf:
 
 		self.output.objcoll.setInitial()
 
-
-		#for i, sample in enumerate(self.input.samples):
-
-		#	sample.load()
-		#	t = sample.tree
-
-		#	sidx = i
-		#	if self.input.cfg.getVar("head", "dataset") == "y":
-		#		sidx = lib.findElmAttr(self.input.datasets, \
-		#		                       "name", \
-		#		                       self.db.getColumn("samples", "name=='" + sample.name + "'", "dataset"))
-
-		#		
-		#	for cidx, sel in enumerate(self.input.selection):
-		#		t.GetPlayer().SetScanRedirect(True)
-		#		t.GetPlayer().SetScanFileName(self.temppath + "templist.txt")
-		#		t.Scan(sel)
-		#		self.objcoll.getEvList().injectScanFile(sidx, cidx, self.temppath + "templist.txt")
-		#		lib.rmFile(self.temppath + "templist.txt")
-		#		self.objcoll.getEvYield().inject(sidx, cidx, int(t.GetEntries(sel[2])))
 
 
 	## runStat
@@ -515,26 +489,6 @@ class mypaf:
 			samp.close()
 
 		self.output.objcoll.setInitial()
-
-
-		#for i, sample in enumerate(self.input.samples):
-
-		#	sample.load()
-		#	t = sample.tree
-
-		#	sidx = i
-		#	if self.input.cfg.getVar("head", "dataset") == "y":
-		#		sidx = lib.findElmAttr(self.input.datasets, \
-		#		                       "name", \
-		#		                       self.db.getColumn("samples", "name=='" + sample.name + "'", "dataset"))
-
-		#	for cidx, sel in enumerate(self.input.selection):
-		#		sels = parser.getSelSteps(sel[2])
-		#		for selection in sels:
-		#			self.objcoll.getEvYield().inject(sidx, cidx, int(t.GetEntries(sel[2])))
-		#		
-		#		nevts = int(t.GetEntries(sel[2]))
-
 
 
 

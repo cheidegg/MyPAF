@@ -167,8 +167,8 @@ class output:
 	def buildScan(self, objnames = []):
 		
 		## initialize the histogram collection
-		self.objcoll.setSources(self.mypaf.input.sources)
-		self.objcoll.setCategs([o.name for o in self.mypaf.input.cfg.getObjs("region=='selection' and (type=='none' or type=='tree')")])
+		#self.objcoll.setSources(self.mypaf.input.sources)
+		#self.objcoll.setCategs([o.name for o in self.mypaf.input.cfg.getObjs("region=='selection' and (type=='none' or type=='tree')")])
 
 		objlist = self.mypaf.input.cfg.getObjs("region=='output' and (type=='evlist' or type=='oblist')")
 		if len(objnames) > 0:
@@ -179,12 +179,15 @@ class output:
 			if var.type == "oblist" and not alist.has("obj"):
 				self.vb.warning("object is not given for object list. list ignored.")
 				continue
+
+			categories = [o.name for o in self.mypaf.findSelections(["tree"], alist)]
+
 			if var.type == "evlist":
-				self.objcoll.addEvList(var.name, var.definition.split(":"), var.argstring)
-				self.objcoll.addEvYield(var.name, var.definition.split(":")[0], var.argstring)
+				self.objcoll.addEvList(var.name, var.definition.split(":"), var.argstring, self.mypaf.input.sources, categories)
+				self.objcoll.addEvYield(var.name, var.definition.split(":")[0], var.argstring, self.mypaf.input.sources, categories)
 			elif var.type == "oblist":
-				self.objcoll.addObList(alist.get("obj"), var.name, var.definition.split(":"), var.argstring)
-				self.objcoll.addObYield(alist.get("obj"), var.name, var.definition.split(":")[0], var.argstring)
+				self.objcoll.addObList(alist.get("obj"), var.name, var.definition.split(":"), var.argstring, self.mypaf.input.sources, categories)
+				self.objcoll.addObYield(alist.get("obj"), var.name, var.definition.split(":")[0], var.argstring, self.mypaf.input.sources, categories)
 			del alist
 		self.objcoll.build()
 
@@ -194,8 +197,8 @@ class output:
 	def buildStat(self, objnames = []):
 		
 		## initialize the histogram collection
-		self.objcoll.setSources(self.mypaf.input.sources)
-		self.objcoll.setCategs([o.name for o in self.mypaf.input.cfg.getObjs("region=='selection' and (type=='none' or type=='tree')")])
+		#self.objcoll.setSources(self.mypaf.input.sources)
+		#self.objcoll.setCategs([o.name for o in self.mypaf.input.cfg.getObjs("region=='selection' and (type=='none' or type=='tree')")])
 
 		objlist = self.mypaf.input.cfg.getObjs("region=='output' and (type=='evyield' or type=='obyield')")
 		if len(objnames) > 0:
@@ -206,10 +209,13 @@ class output:
 			if var.type == "obyield" and not alist.has("obj"):
 				self.vb.warning("object is not given for object yield. yield ignored.")
 				continue
+
+			categories = [o.name for o in self.mypaf.findSelections(["tree"], alist)]
+
 			if var.type == "evyield":
-				self.objcoll.addEvYield(var.name, var.definition.split(":")[0], var.argstring)
+				self.objcoll.addEvYield(var.name, var.definition.split(":")[0], var.argstring, self.mypaf.input.sources, categories)
 			elif var.type == "obyield":
-				self.objcoll.addObYield(alist.get("obj"), var.name, var.definition.split(":")[0], var.argstring)
+				self.objcoll.addObYield(alist.get("obj"), var.name, var.definition.split(":")[0], var.argstring, self.mypaf.input.sources, categories)
 			#elif var.type == "effmap":
 			#	self.objcoll.addEffMap(var.name, var.definition, var.argstring)
 			#elif var.type == "roc":

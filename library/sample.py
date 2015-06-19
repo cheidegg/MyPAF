@@ -71,15 +71,19 @@ class sample:
 	def load(self):
 		## loads and opens the TFile and TTree
 
-		self.tree     = ROOT.TChain(self.treename)
-		for p in self.paths:
-			self.tree.Add(p)
+		#self.tree     = ROOT.TChain(self.treename)
+		#for p in self.paths:
+		#	self.tree.Add(p)
 
-		#self.file     = ROOT.TFile.Open(self.paths[0], "read")
-		#self.tree     = self.file.Get(self.treename)
-		#self.nentries = self.tree.GetEntries()
+		self.file     = ROOT.TFile.Open(self.path, "read")
+		if self.file: self.vb.talk("Successfully opened TFile " + self.path)
+		else        : self.vb.error("Error while opening TFile " + self.path + ". Does not exist.")
 
-		
+		self.tree     = self.file.Get(self.treename)
+		if self.tree: self.vb.talk("Successfully loaded TTree " + self.treename)
+		else        : self.vb.error("Error while loading TTree " +  self.treename + ". Does not exist.")
+
+		self.nentries = self.tree.GetEntries()
 
 
 	## setDbParams

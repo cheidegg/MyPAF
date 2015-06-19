@@ -50,10 +50,7 @@ class evlist:
 		self.sources = sources
 		self.categs  = categs
 
-		print self.sources
-		print self.categs
-
-		self.paths   = [[self.mypaf.prodpath + "evlist_" + self.name + "_" + str(sidx) + "_" + str(cidx) + ".txt" for cidx in range(len(categs))] for sidx in range(len(sources))]
+		self.paths   = [[self.mypaf.prodpath + "evlist_" + self.name + "_" + self.sources[sidx] + "_" + self.categs[cidx] + ".txt" for cidx in range(len(categs))] for sidx in range(len(sources))]
 		self.files   = [[open(self.paths[sidx][cidx], "a") for cidx in range(len(categs))] for sidx in range(len(sources))]
 		self.built   = True
 
@@ -66,7 +63,7 @@ class evlist:
 			for sidx in range(len(sources)):
 				for cidx in range(len(categs)):
 					self.files[sidx][cidx].close()
-	
+
 
 	## exportAsHist
 	##---------------------------------------------------------------
@@ -96,16 +93,20 @@ class evlist:
 		## returns the content of the event list as a string in readable form
 
 		self.close()
-		text = " : ".join(variables)
-		texts = [[text for sidx in range(len(self.sources))] for cidx in range(len(self.categs))]
+		text = " : ".join(self.vars) + "\n"
+		text += "\n"
+		texts = [[text for cidx in range(len(self.categs))] for sidx in range(len(self.sources))]
 
 		for sidx in range(len(self.sources)):
 			for cidx in range(len(self.categs)):
 				f     = open(self.paths[sidx][cidx], "r")
 				lines = f.readlines()
+				f.close()
+
 				for entry in lines:
 					texts[sidx][cidx] += " : ".join([e.strip() for e in entry.split(":=")]) + "\n"
-				f.close()
+
+		return texts
 
 
 	## free
@@ -123,23 +124,36 @@ class evlist:
 
 		f = open(path, "r")
 		full = f.readlines()
-		#cols = lib.getColWidths(full)
 		f.close()
-		assoc = [i for i in range(len(self.vars))]
+
+		## CH: do not need to compute format ourselves, can take the one from the scan file 
+		#cols = lib.getColWidths([line.split("*")[1:len(line.split("*"))-1] for i, line in enumerate(full) if not i == 0 and not i == 2 and not i == len(full)-1]) ## due to * format 
+		##cols = [len(col) for i, col in enumerate(full[1].split("*")[1:len(full[1].split("*"))-1])]
+
+		#assoc = [i for i in range(len(self.vars))]
+		#header = []
 
 		self.files[sidx][cidx].close()
 		lib.rmFile(self.paths[sidx][cidx])
 		self.files[sidx][cidx] = open(self.paths[sidx][cidx], "a")
 
-		for i, head in enumerate([entry.strip() for entry in full[1].strip("\n").split("*")[1:len(full[1].split("*"))-1]]):
-			j = lib.findElm(self.vars, head)
-			assoc[i] = j 
+		#print full[1].strip("\n").split("*")[1:len(full[1].split("*"))-1]
+		#for i, head in enumerate([entry.strip() for entry in full[1].strip("\n").split("*")[1:len(full[1].split("*"))-1]]):
+		#	j = lib.findElm(self.vars, head)
+		#	print "searching for " + head + " in " + str(self.vars) + " found " + str(j) 
+		#	assoc[i] = j 
+		#	header.append(self.vars[j])
+
+		self.files[sidx][cidx].write(" : ".join(self.vars) + "\n\n")
 
 		for line in full[3:len(full)-1]:
 			elm = line.split("*")[1:len(line.split("*"))-1]
-			nl = [elm[assoc[i]].strip() for i in range(len(elm))]
+			#print elm
+			#print assoc
+			#nl = [elm[assoc[i]].strip() for i in range(len(elm))]
 			#nl = [lib.formatStr(elm[assoc[i]].strip(), cols[i]) for i in range(len(elm))]
-			self.files[sidx][cidx].write(":=".join(nl) + "\n")
+			nl = [elm[i] for i in range(len(elm))]
+			self.files[sidx][cidx].write(" : ".join(nl) + "\n")
 
 
 	## getColWidths
