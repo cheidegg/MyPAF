@@ -10,7 +10,7 @@
 #################################################################
 
 import ROOT, sys
-import args, clist, dbreader, objcoll, hscheme, lib, mypaf, vb
+import args, clist, dbreader, objcoll, hscheme, lib, mypaf, sel, vb
 
 
 ## output
@@ -47,6 +47,7 @@ class output:
 		self.input    = mypaf.input
 		self.vb       = mypaf.vb	
 		self.file     = None
+		self.vb.call("output", "__init__", [self], "Initializing the output class.")
 
 		self.objcoll  = objcoll.objcoll(self.mypaf)
 		self.build()
@@ -56,6 +57,10 @@ class output:
 	##---------------------------------------------------------------
 	def build(self):
 
+		self.vb.moduleout()
+		self.vb.call("output", "build", [self], "Building the module.")
+		if self.mypaf.imodule == 6: return True
+		#eval("return self.build" + self.mypaf.module.title())
 		if   self.mypaf.imodule == 1: return self.buildTree()
 		elif self.mypaf.imodule == 2: return self.buildDraw()
 		elif self.mypaf.imodule == 3: return self.buildPlot()
@@ -71,6 +76,7 @@ class output:
 	##---------------------------------------------------------------
 	def buildDraw(self, objnames = []):
 
+		self.vb.call("output", "buildDraw", [self], "Building the draw module.")
 		self.openFile()
 
 		## initialize the histogram collection
@@ -85,14 +91,12 @@ class output:
 		for var in objlist:
 			alist = args.args(var.argstring)
 			if not alist.has("obs") and not alist.has("obsx"):
-				self.vb.warning("observable is not given for plot. plot ignored.")
+				self.vb.warning("Physics observable (argument 'obs') is not given for histogram. Histogram is ignored.")
 				continue
 			
 			categories = [o.name for o in self.mypaf.findSelections(["tree"], alist)]
-
-			binargs, labels = lib.prepareHistInfo(self.db, alist)
-
-			self.objcoll.addHist(var.name, binargs, labels, var.argstring, self.mypaf.input.sources, categories)
+			#binargs, labels = lib.prepareHistInfo(self.db, alist)
+			self.objcoll.addHist(var.name, lib.getHistDim(var.definition), var.argstring, self.mypaf.input.sources, categories)
 			if var.type == "plot": self.objcoll.setHistP(var.name)
 			del alist
 
@@ -105,6 +109,7 @@ class output:
 	##---------------------------------------------------------------
 	def buildHist(self):
 
+		self.vb.call("output", "buildHist", [self], "Building the hist module.")
 		self.mypaf.runTier2Modules(self.mypaf.input.modules, self.mypaf.input.objects)
 
 		## initialize also every histogram produced before as a (trivial)scheme
@@ -138,6 +143,7 @@ class output:
 	##---------------------------------------------------------------
 	def buildPlot(self, objnames = []):
 
+		self.vb.call("output", "buildPlot", [self], "Building the plot module.")
 		self.openFile()
 
 		objlist = self.mypaf.input.cfg.getObjs("region=='output' and (type=='file' or type=='plot')")
@@ -148,14 +154,14 @@ class output:
 		for var in objlist:
 			alist = args.args(var.argstring)
 			if not alist.has("obs") and not alist.has("obsx"):
-				self.vb.warning("observable is not given for plot. plot ignored.")
+				self.vb.warning("Physics observable (argument 'obs') is not given for histogram. Histogram is ignored.")
 				continue
 
 			## actually, find the selection which has the good name?
 			categories = [o.name for o in self.mypaf.findSelections(["tree"], alist)]
 			source = alist.get("source")
-			binargs, names = lib.prepareHistInfo(self.db, alist)
-			self.objcoll.addHist(var.name, binargs, names, var.argstring, [source], categories)
+			#binargs, names = lib.prepareHistInfo(self.db, alist)
+			self.objcoll.addHist(var.name, var.argstring, [source], categories)
 			if var.type == "plot": self.objcoll.setHistP(var.name) 
 			del alist
 	## WHAT TO DO ABOUT GEN INFO?
@@ -166,6 +172,7 @@ class output:
 	##---------------------------------------------------------------
 	def buildScan(self, objnames = []):
 		
+		self.vb.call("output", "buildScan", [self], "Building the scan module.")
 		## initialize the histogram collection
 		#self.objcoll.setSources(self.mypaf.input.sources)
 		#self.objcoll.setCategs([o.name for o in self.mypaf.input.cfg.getObjs("region=='selection' and (type=='none' or type=='tree')")])
@@ -177,7 +184,7 @@ class output:
 		for var in objlist:
 			alist = args.args(var.argstring)
 			if var.type == "oblist" and not alist.has("obj"):
-				self.vb.warning("object is not given for object list. list ignored.")
+				self.vb.warning("Physics object (argument 'obj') is not given for object of type ObList. ObList is ignored.")
 				continue
 
 			categories = [o.name for o in self.mypaf.findSelections(["tree"], alist)]
@@ -196,28 +203,32 @@ class output:
 	##---------------------------------------------------------------
 	def buildStat(self, objnames = []):
 		
+		self.vb.call("output", "buildStat", [self], "Building the stat module.")
 		## initialize the histogram collection
 		#self.objcoll.setSources(self.mypaf.input.sources)
 		#self.objcoll.setCategs([o.name for o in self.mypaf.input.cfg.getObjs("region=='selection' and (type=='none' or type=='tree')")])
 
-		objlist = self.mypaf.input.cfg.getObjs("region=='output' and (type=='evyield' or type=='obyield')")
+		objlist = self.mypaf.input.cfg.getObjs("region=='output' and (type=='evyield' or type=='obyield' or type=='effmap')")
 		if len(objnames) > 0:
 			objlist = lib.getElmAttrAllOr(objlist, "name", objnames)
+		allselstr = [[s.name, s.definition] for s in self.input.cfg.getObjs("region=='selection' and (type=='none' or type=='tree')")]
 
 		for var in objlist:
 			alist = args.args(var.argstring)
 			if var.type == "obyield" and not alist.has("obj"):
-				self.vb.warning("object is not given for object yield. yield ignored.")
+				self.vb.warning("Physics object (argument 'obj') is not given for object of type ObYield. ObYield is ignored.")
 				continue
 
-			categories = [o.name for o in self.mypaf.findSelections(["tree"], alist)]
+			csel       = self.mypaf.findSelections(["tree"], alist)
+			categories = [o.name for o in csel]
 
 			if var.type == "evyield":
 				self.objcoll.addEvYield(var.name, var.definition.split(":")[0], var.argstring, self.mypaf.input.sources, categories)
 			elif var.type == "obyield":
 				self.objcoll.addObYield(alist.get("obj"), var.name, var.definition.split(":")[0], var.argstring, self.mypaf.input.sources, categories)
-			#elif var.type == "effmap":
-			#	self.objcoll.addEffMap(var.name, var.definition, var.argstring)
+			elif var.type == "effmap":
+				ssels = [sel.sel(c.definition, allselstr) for c in csel]
+				self.objcoll.addEffMap(var.name, [s.string for s in ssels], var.argstring, self.mypaf.input.sources, categories)
 			#elif var.type == "roc":
 			#	self.objcoll.addRoc(var.name, var.definition, var.argstring)
 			del alist
@@ -228,14 +239,14 @@ class output:
 	##---------------------------------------------------------------
 	def buildTree(self):
 
-		## to be rewritten
-		print "to be rewritten"
+		self.vb.call("output", "buildTree", [self], "Building the tree module.")
 
 
 	## finalize
 	##---------------------------------------------------------------
 	def finalize(self):
 
+		self.vb.call("output", "finalize", [self], "Finalizing the outputs.")
 		self.objcoll.draw()
 
 
@@ -243,6 +254,7 @@ class output:
 	##---------------------------------------------------------------
 	def openFile(self, postpend = ""):
 
+		self.vb.call("output", "openFile", [self, postpend], "Opening the output ROOT file.")
 		if self.file != None:
 			self.file.Close()
 		if postpend != "": postpend = "_" + postpend
@@ -253,8 +265,9 @@ class output:
 	##---------------------------------------------------------------
 	def openTree(self, treename = "tree", filename = ""):
 
+		self.vb.call("output", "openTree", [self, treename, filename], "Opening the output ROOT tree.")
 		if self.tree != None:
-			self.vb.warning("existing tree is tried to be reopened. closing it first")
+			self.vb.warning("Attempting to open TTree that already is open. Closing it first before continuing.")
 			self.tree.Close()
 			openFile(filename)
 		if self.file == None:
@@ -268,6 +281,7 @@ class output:
 		## write everything from this class to the production directory
 		## copy cfg file to the production directory
 
+		self.vb.call("output", "save", [self], "Saving the outputs to disk.")
 		if self.file != None:
 			#self.file.Write()
 			self.file.Close()

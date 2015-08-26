@@ -111,8 +111,9 @@ class args:
 	def reinit(self, alist):
 		## reset keys and values using keys and values in another instance of args
 
-		self.keys = alist.keys
-		self.list = alist.list
+		self.keys     = alist.keys
+		self.list     = alist.list
+		self.argstrig = alist.argstring
 
 
 	## remove

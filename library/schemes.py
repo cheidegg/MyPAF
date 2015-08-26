@@ -9,8 +9,8 @@
 #################################################################
 #################################################################
 
-import ROOT, copy
-import args, hist, hscheme, rstuff
+import ROOT, copy, pdb
+import args, hist, hscheme, lib, rstuff, styleargs
 
 
 ## run 
@@ -43,7 +43,7 @@ def add(name, schemes, alist):
 
 	## need to fix the coeffs
 	if len(schemes) > 1:
-		h1 = hist.hist(schemes[0].mypaf, name, schemes[0].getHist().binargs, schemes[0].getHist().labels, "")
+		h1 = hist.hist(schemes[0].mypaf, name, schemes[0].getHist().getDim(), schemes[0].getHist().alist.argstring)
 		h1.reinit(schemes[0].getHist())
 		h1.injectHist(schemes[0].getHist())
 		h1.setArgs(alist.argstring)
@@ -65,20 +65,18 @@ def comp(name, schemes, alist):
 		schemes[0].mypaf.divideCanv(1, 1, False)
 
 	## what to compare? schemes (histograms between schemes), sources (inside every scheme), categs (inside every scheme)
-	if alist.has("comp"): comp = alist.get("comp")
-	else                : comp = "schemes"
+	comp = lib.useVal("schemes", alist.get("comp"))
 
 	## for the drawing stuff, legend, etc. we need an empty histogram
 	## that we draw on top of everything 
-	h1 = hist.hist(schemes[0].mypaf, name, schemes[0].getHist().binargs, schemes[0].getHist().labels, "")
+	h1 = hist.hist(schemes[0].mypaf, name, schemes[0].getHist().getDim(), alist.argstring)
 	h1.reinit(schemes[0].getHist())
-	h1.resetArgs(alist.argstring)
 
 	a = []
 	for scheme in schemes:
 		a.append(scheme.getHist().alist.argstring)
-		scheme.getHist().resetArgs(alist.argstring)
-		scheme.getHist().applyArgs()
+		#scheme.getHist().resetArgs(alist.argstring)
+		#scheme.getHist().applyArgs()
 
 	h = []
 	l = []
@@ -126,36 +124,37 @@ def comp(name, schemes, alist):
 
 			## main plot
 			schemes[0].mypaf.pads[0].cd()
-			hr = copy.deepcopy(hline[0].getH(d[i][j][0], d[i][j][1]))
-			mmax = max([h.getH(d[i][j][0], d[i][j][1]).GetMaximum() for h in hline])
-			mmin = min(0., min([h.getH(d[i][j][0], d[i][j][1]).GetMinimum() for h in hline]))
-			## logscale?
-			#if alist.get("ratio") == "y": mmin = 0.001
+			hratio = rstuff.copyTH1F(hline[0].getH(d[i][j][0], d[i][j][1]))
 
-			alist.set("ymin", mmin)
-			alist.set("ymax", 1.2*mmax)
-			for k in range(1,len(hline)):
+			for k in range(len(hline)):
 				hline[k].alist.reinit(alist)
 
-			alist.set("draw1mode", "pe")
-			alist.set("color"    , ROOT.kBlack)
-			alist.setArgs(alist.allStrip("1"))
+			# draw scheme 2
+			sa = styleargs.styleargs(alist.get("style"), "2", lib.useVal("ROOT.kBlack", alist.get("color2")))
+			sa.set("labelsizex", "0")
+			hline[1].alist.setArgs(sa.alist.argstring)
+			hline[1].drawSingle(d[i][j][0], d[i][j][1], 0, "", False, False)
 
-			hline[0].alist.reinit(alist)
-			hline[0].prepareDraw(0)
-			hline[0].getH(d[i][j][0], d[i][j][1]).SetFillStyle(0)
-			#hline[0].getH(d[i][j][0], d[i][j][1]).SetLineStyle(1)
-			hline[0].getH(d[i][j][0], d[i][j][1]).GetXaxis().SetLabelSize(0)
-			hline[0].drawH(d[i][j][0], d[i][j][1], "", True)
-			for k in range(1,len(hline)):
-				hline[k].alist.resetArgs(alist.allStrip(str(k+1)))
-				hline[k].prepareDraw(0)
-				hline[k].getH(d[i][j][0], d[i][j][1]).SetFillStyle(0)
-				#hline[k].getH(d[i][j][0], d[i][j][1]).SetLineStyle(1)
-				hline[k].getH(d[i][j][0], d[i][j][1]).GetXaxis().SetLabelSize(0)
-				hline[k].drawH(d[i][j][0], d[i][j][1], "same", True)
+			# draw schemes > 2
+			for k in range(2, len(hline)):
+				sa.reinit(alist.get("style"), str(k+1), lib.useVal("ROOT.kBlack", alist.get("color" + str(k+1))))
+				sa.set("labelsizex", "0")
+				hline[k].alist.setArgs(sa.alist.argstring)
+				hline[k].drawSingle(d[i][j][0], d[i][j][1], 0, "same", False, False)
 
-			sc = [round(h.getH(d[i][j][0], d[i][j][1]).Integral() / hline[0].getH(d[i][j][0], d[i][j][1]).Integral() * 100,1) for h in hline]
+			# draw scheme 1
+			sa.reinit(alist.get("style"), "1", lib.useVal("ROOT.kBlack", alist.get("color1")))
+			sa.set("labelsizex", "0" )
+			sa.set("draw1mode" , "pe")
+			hline[0].alist.setArgs(sa.alist.argstring)
+			hline[0].runPreDraw(0)
+			hline[0].drawH(d[i][j][0], d[i][j][1], 0, "same", False, False)
+			# do not drawSingle as it resets global style
+
+
+			sc = [0 for h in hline]
+			if hline[0].getH(d[i][j][0], d[i][j][1]).Integral() > 0:
+				sc = [round(h.getH(d[i][j][0], d[i][j][1]).Integral() / hline[0].getH(d[i][j][0], d[i][j][1]).Integral() * 100,1) for h in hline]
 			lnames = l[i][j]
 			if alist.has("sce2"):
 				lnames = [l[i][j][0]]
@@ -165,33 +164,31 @@ def comp(name, schemes, alist):
 					else: 
 						add = ""
 					lnames.append(ll + add)
-			leg = rstuff.legend([h.getH(d[i][j][0], d[i][j][1]) for h in hline], lnames, ["l" for h in hline])
+			leg = rstuff.legend([h.getH(d[i][j][0], d[i][j][1]) for h in hline], lnames, [h.d for h in hline])
 			leg.Draw("same")
 			
 			# ratio plot
 			if alist.has("ratio") and alist.get("ratio") == "y":
 				schemes[0].mypaf.pads[1].cd()
+				schemes[0].mypaf.pads[1].SetLogy(0)
 
-				hmin = 0.
-				hmax = 0.
+				hratio.Divide(hline[1].getH(d[i][j][0], d[i][j][1]))
+				hratio = rstuff.setRatioStyle(hratio, l[i][j][0], l[i][j][1], hline[0].labels[0], alist)
+				hratio.SetStats(0)
+				hratio.Draw("pe")
 
-				if alist.has("rmin"): hmin = float(alist.get("rmin"))
-				if alist.has("rmax"): hmax = float(alist.get("rmax"))
-
-				hr.Divide(hline[1].getH(d[i][j][0], d[i][j][1]))
-				hr = rstuff.setRatioStyle(hr, l[i][j][0], l[i][j][1], hline[0].labels[0], hmin, hmax)
-				hr.Draw("pe")
-
-				line = rstuff.line(hr.GetXaxis().GetXmin(), 1.00, hr.GetXaxis().GetXmax(), 1.00)
-				#fit  = rstuff.fit(hr, "line")
+				line = rstuff.line()
+				line.DrawLine(hratio.GetXaxis().GetXmin(), 1.00, hratio.GetXaxis().GetXmax(), 1.00)
+				#fit  = rstuff.fit(hratio, "line")
 				#fit  = rstuff.lineStyle(fit, 2, 1, ROOT.kRed+1)
 				#fit.Draw("l")
 
 			## draw style stuff
-			schemes[0].mypaf.saveCanv(name + "_" + schemes[0].getHist().sources[d[i][j][0]].name + "_" + schemes[0].getHist().categs[d[i][j][1]])	
+			schemes[0].mypaf.saveCanv(name + "_" + schemes[0].getHist().sources[d[i][j][0]].name + "_" + schemes[0].getHist().categs[d[i][j][1]])
+			del hratio	
 	
 	for i, scheme in enumerate(schemes):
-		scheme.getHist().resetArgs(a[i])
+		scheme.getHist().alist.resetArgs(a[i])
 
 	return h1
 
@@ -204,7 +201,7 @@ def div(name, schemes, alist):
 
 	## need to fix the coeffs
 	if len(schemes) > 1:
-		h1 = hist.hist(schemes[0].mypaf, name, schemes[0].getHist().binargs, "")
+		h1 = hist.hist(schemes[0].mypaf, name, schemes[0].getHist().getDim(), schemes[0].getHist().alist.argstring)
 		h1.reinit(schemes[0].getHist())
 		h1.injectHist(schemes[0].getHist())
 		h1.setArgs(alist.argstring)
@@ -255,12 +252,12 @@ def mult(name, schemes, alist):
 
 	## need to fix the coeffs
 	if len(schemes) > 1:
-		h1 = hist.hist(schemes[0].mypaf, name, schemes[0].getHist().binargs, "")
+		h1 = hist.hist(schemes[0].mypaf, name, schemes[0].getHist().getDim(), schemes[0].getHist().alist.argstring)
 		h1.reinit(schemes[0].getHist())
 		h1.injectHist(schemes[0].getHist())
 		h1.setArgs(alist.argstring)
 		for i in range(1,len(schemes)):
-			h1.multHist(schemes[i].getHist(), [], alist.get("error"))
+			h1.divHist(schemes[i].getHist(), [], alist.get("error"))
 	return h1
 
 
@@ -286,7 +283,7 @@ def sub(name, schemes, alist):
 
 	## need to fix the coeffs
 	if len(schemes) > 1:
-		h1 = hist.hist(schemes[0].mypaf, name, schemes[0].getHist().binargs, "")
+		h1 = hist.hist(schemes[0].mypaf, name, schemes[0].getHist().getDim(), schemes[0].getHist().alist.argstring)
 		h1.reinit(schemes[0].getHist())
 		h1.injectHist(schemes[0].getHist())
 		h1.setArgs(alist.argstring)

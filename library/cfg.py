@@ -40,10 +40,42 @@ class cfg:
 		self.mypaf  = input.mypaf
 		self.db     = input.mypaf.db
 		self.vb     = input.mypaf.vb
+		self.vb.call("cfg", "__init__", [self, input, path], "Initializing the cfg class.")
 
 		self.load(path)	
+		self.check()
 		self.loadObjs()
 
+
+	## check
+	##--------------------------------------------------------------- 
+	def check(self):
+		## checks the current contents read from the cfg file
+		## if its syntax and semantic are OK
+
+		return
+		inputfiletypes = ["tree", "file", "root", "evlist", "evyield", "oblist", "obyield", "numfile"]
+
+		for region in regions:
+			collection = getattr(self, region)
+
+			for entry in collection:
+
+				## columns missing
+				if (region == "head" and len(entry) < 2) or (region != "head" and len(entry) < 3):
+					self.vb.error("Not enough information provided in the cfg file at line " + " := ".join(entry) + ".")
+
+				## required head variables => not! defaults should go into the code
+				#cvars = [elm[1] for elm in collection]
+				#required = ["]
+				#if any([True if var not in cvars else False for var in required]
+
+				## input file paths
+				if region == "input":
+					if entry[0] in inputfiletypes:
+						sdef = entry[2].split() 
+			
+			
 
 	## get
 	##--------------------------------------------------------------- 
@@ -55,6 +87,7 @@ class cfg:
 		## ATTENTION: this function shall only be accessed via getAll,
 		## getColumn or getVar 
 
+		self.vb.call("cfg", "get", [self, region, selection, columns], "Retrieving information from the cfg file.")
 		region    = region.strip()
 
 		result = []
@@ -102,6 +135,7 @@ class cfg:
 		## separate individual columns with ":", define a range with "-"
 		## or ask for all columns using "all"
 
+		self.vb.call("cfg", "getAll", [self, region, selection, columns], "Retrieving a matrix from the cfg file.")
 		return self.get(region, selection, columns)
 
 
@@ -111,6 +145,7 @@ class cfg:
 		## returns a single column according to column of all entries in
 		## the cfg file that match region and pass the selection
 
+		self.vb.call("cfg", "getColumn", [self, region, selection, column], "Retrieving a column vector from the cfg file.")
 		matrix = self.get(region, selection, column)
 		if len(matrix)>0:
 			return [l[0] for l in matrix]
@@ -121,6 +156,7 @@ class cfg:
 	##--------------------------------------------------------------- 
 	def getHeader(self, region):
 
+		self.vb.call("cfg", "getHeader", [self, region], "Getting the header labels for a given region.")
 		idx = lib.findElm(self.regions, region)
 		return self.header[idx].list
 
@@ -129,6 +165,7 @@ class cfg:
 	##--------------------------------------------------------------- 
 	def getObjs(self, selection = ""):
 
+		self.vb.call("cfg", "getObjs", [self, selection], "Getting a list of objects that pass a given selection.")
 		for k,v in self.objs[0].__dict__.items():
 			selection = selection.replace(k, "obj." + k)
 
@@ -146,16 +183,28 @@ class cfg:
 		## matches the region and passes the selection
 		## useful for single, unique variables in the head region
 
+		self.vb.call("cfg", "getVar", [self, selection, region], "Retrieving a header variable from the cfg file.")
 		column = self.getColumn(region, "name=='" + selection + "'", "value")
 		if len(column)>0:
 			return column[0]
 		return ""
 
 
+	## getVars
+	##--------------------------------------------------------------- 
+	def getVars(self, selection, region = "head"):
+		## returns column var of all the entries in the cfg file that
+		## matches the region and passes the selection
+
+		self.vb.call("cfg", "getVar", [self, selection, region], "Retrieving a header variable from the cfg file.")
+		return self.getColumn(region, "name=='" + selection + "'", "value")
+
+
 	## hasVar
 	##--------------------------------------------------------------- 
 	def hasVar(self, selection, region = "head"):
 
+		self.vb.call("cfg", "hasVar", [self, selection, region], "Searching for a header variable.")
 		column = self.getColumn(region, "name=='" + selection + "'", "value")
 		if len(column)==0: return False
 		if column[0].strip() == "": return False
@@ -166,8 +215,11 @@ class cfg:
 	##--------------------------------------------------------------- 
 	def load(self, path):
 
+		self.vb.call("cfg", "load", [self, path], "Loading the cfg file " + path + ".")
 		if path[0] != "/": path = self.mypaf.path + path
 		self.path = path
+
+		self.vb.talk("Configuration file " + self.path + " is loaded.")
 
 		self.cfg = open(path, "r")
 		lines = self.cfg.readlines()
@@ -198,6 +250,7 @@ class cfg:
 	##--------------------------------------------------------------- 
 	def loadObjs(self):
 
+		self.vb.call("cfg", "loadObjs", [self], "Retrieving all cfg objects from the cfg file.")
 		self.objs = []
 		for i, region in enumerate(self.regions):
 			if region == "head": continue
@@ -213,11 +266,13 @@ class cfg:
 	def reload(self, path):
 		## clears the cache and reloads the cfg file
 
+		self.vb.call("cfg", "reload", [self, path], "Re-loading the class for a new cfg file " + path + ".")
 		self.undef = []
 		for region in regions:
 			eval("self." + region + " = []")
 
 		self.load(path)
+		self.check()
 
 
 

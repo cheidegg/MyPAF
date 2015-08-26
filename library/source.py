@@ -43,6 +43,7 @@ class source:
 		self.db    = mypaf.db
 		self.vb    = mypaf.vb
 
+		self.vb.call("source", "__init__", [self, mypaf, name], "Initializing the source class.")
 		self.name = name
 
 		self.load()
@@ -51,12 +52,14 @@ class source:
 	## addSample
 	##---------------------------------------------------------------
 	def addSample(self, name, path, tree):
+		self.vb.call("source", "addSample", [self, name, path, tree], "Adding a sample to the this instance.")
 		self.samples.append(sample.sample(self.mypaf, name, path, tree))
 
 
 	## getSample
 	##--------------------------------------------------------------- 
 	def getSample(self, name):
+		self.vb.call("source", "getSample", [self, name], "Retrieving a sample from this instance according to its name.")
 		idx = lib.findElmAttr(self.samples, "name", name)
 		return self.samples[idx]
 
@@ -65,6 +68,7 @@ class source:
 	##---------------------------------------------------------------
 	def load(self):
 
+		self.vb.call("source", "load", [self], "Loading the parameters from the database and sets them as attributes to this instance.")
 		vars = self.db.getRow("sources", "name == '" + self.name + "'")
 
 		self.type        = vars[1]

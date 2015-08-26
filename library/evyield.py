@@ -24,6 +24,7 @@ class evyield:
 		self.mypaf     = mypaf
 		self.db        = mypaf.db
 		self.vb        = mypaf.vb
+		self.vb.call("evyield", "__init__", [self, mypaf, name, variable, argstring], "Initializing the evyield class.")
 
 		self.name      = name.strip()
 		self.variable  = variable.strip()
@@ -35,6 +36,8 @@ class evyield:
 	##---------------------------------------------------------------
 	def build(self, sources, categs):
 
+		self.vb.call("evyield", "build", [self, sources, categs], "Building the evyield.")
+
 		self.sources = sources
 		self.categs  = categs
 
@@ -45,6 +48,7 @@ class evyield:
 	## count
 	##---------------------------------------------------------------
 	def count(self, sidx, cidx, weight = 1.):
+		self.vb.call("evyield", "count", [self, sidx, cidx, weight], "Counting an event to the evyield.")
 		if len(self.yields) > sidx:
 			self.yields[sidx][cidx] += weight
 	
@@ -54,6 +58,7 @@ class evyield:
 	def exportAsHist(self):
 		## exports the event yields as a hist instance
 
+		self.vb.call("evyield", "exportAsHist", [self], "Exporting the evyield as a hist.")
 		h = hist.hist(self.mypaf, self.name, clist.clist(1, 0, 1), [self.name, "events"])
 		h.build(self.sources, self.categs)
 
@@ -67,12 +72,13 @@ class evyield:
 	def export(self):
 		## returns the content of the event list as a string in readable form
 
-		print "do nothing"
+		self.vb.call("evyield", "exportAsText", [self], "Exporting the evyield as text.")
 
 
 	## inject
 	##---------------------------------------------------------------
 	def inject(self, sidx, cidx, value):
+		self.vb.call("evyield", "inject", [self, sidx, cidx, value], "Injecting a number into the evyield.")
 		if len(self.yields) > sidx:
 			self.yields[sidx][cidx] = value
 

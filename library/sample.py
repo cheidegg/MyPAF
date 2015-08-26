@@ -40,6 +40,7 @@ class sample:
 		self.mypaf = mypaf
 		self.db    = mypaf.db
 		self.vb    = mypaf.vb
+		self.vb.call("sample", "__init__", [self, mypaf, name, path, treename], "Initializing the sample class.")
 
 		if path[0] != "/" and path.find("dcap://") == -1 and path.find("root://") == -1: path = mypaf.inputpath + path
 
@@ -55,6 +56,7 @@ class sample:
 	##---------------------------------------------------------------
 	def close(self):
 
+		self.vb.call("sample", "close", [self], "Closing the file and frees the memory.")
 		self.file.Close()
 
 		del self.tree
@@ -69,12 +71,14 @@ class sample:
 	def load(self):
 		## loads and opens the TFile and TTree
 
+		self.vb.call("sample", "load", [self], "Loading the file and the tree.")
+
 		self.file     = ROOT.TFile.Open(self.path, "read")
-		if self.file: self.vb.talk("Successfully opened TFile " + self.path)
+		if self.file: self.vb.talk("Successfully opened TFile " + self.path + ".", 1)
 		else        : self.vb.error("Error while opening TFile " + self.path + ". Does not exist.")
 
 		self.tree     = self.file.Get(self.treename)
-		if self.tree: self.vb.talk("Successfully loaded TTree " + self.treename)
+		if self.tree: self.vb.talk("Successfully loaded TTree " + self.treename + ".", 1)
 		else        : self.vb.error("Error while loading TTree " +  self.treename + ". Does not exist.")
 
 		self.nentries = self.tree.GetEntries()
@@ -84,6 +88,8 @@ class sample:
 	##--------------------------------------------------------------- 
 	def setDbParams(self):	
 		## sets the parameters stored in the db
+
+		self.vb.call("sample", "setDbParams", [self], "Loading the parameters from the database and sets them as attributes.")
 
 		params = self.db.getAll("samples", "name=='" + self.name + "'", "all")
 		if len(params) > 4:

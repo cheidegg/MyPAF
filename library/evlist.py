@@ -9,6 +9,7 @@
 #################################################################
 #################################################################
 
+import os
 import args, dbreader, hist, lib, mypaf, vb
 
 
@@ -24,6 +25,7 @@ class evlist:
 		self.mypaf     = mypaf
 		self.db        = mypaf.db
 		self.vb        = mypaf.vb
+		self.vb.call("evlist", "__init__", [self, mypaf, name, variables, argstring], "Initializing the evlist class.")
 
 		self.name      = name.strip()
 		self.alist     = args.args(argstring)
@@ -39,6 +41,7 @@ class evlist:
 	def addEntry(self, sidx, cidx, values):
 		## adds an entry to the event list
 
+		self.vb.call("evlist", "addEntry", [self, sidx, cidx, values], "Adding an entry to the evlist.")
 		if len(values) == len(self.vars) and len(self.files) > sidx:
 			self.files[sidx][cidx].write(":=".join(values) + "\n")
 
@@ -46,6 +49,8 @@ class evlist:
 	## build
 	##---------------------------------------------------------------
 	def build(self, sources, categs):
+
+		self.vb.call("evlist", "build", [self, sources, categs], "Building the evlist.")
 
 		self.sources = sources
 		self.categs  = categs
@@ -59,15 +64,39 @@ class evlist:
 	##---------------------------------------------------------------
 	def close(self):
 
+		self.vb.call("evlist", "close", [self], "Closing the evlist.")
+
 		if not self.files[0][0].closed:
 			for sidx in range(len(sources)):
 				for cidx in range(len(categs)):
 					self.files[sidx][cidx].close()
 
 
+	## exportAsCSV
+	##---------------------------------------------------------------
+	def exportAsCSV(self):
+
+		self.vb.call("evlist", "exportAsCSV", [self], "Exporting the evlist as CSV.")
+
+		for sidx in range(len(self.sources)):
+			for cidx in range(len(self.categs)):
+				self.files[sidx][cidx].close()
+				f = open(self.paths[sidx][cidx], "r")
+				lines = [l.replace(":", ",") for l in f.readlines()]
+				f.close()
+
+				f = open(self.paths[sidx][cidx].replace(".txt", ".csv"), "a")
+				for l in lines:
+					f.write(l)
+				f.close()
+				self.files[sidx][cidx] = open(self.paths[sidx][cidx], "a")
+
+
 	## exportAsHist
 	##---------------------------------------------------------------
 	def exportAsHist(self, var = "run"):
+
+		self.vb.call("evlist", "exportAsHist", [self, var], "Exporting the evlist as histogram.")
 
 		self.close()
 
@@ -87,10 +116,32 @@ class evlist:
 		return h
 
 
+	## exportAsPick
+	##---------------------------------------------------------------
+	def exportAsPick(self):
+
+		self.vb.call("evlist", "exportAsPick", [self], "Exporting the evlist as TXT file good for doing pickevents.")
+
+		for sidx in range(len(self.sources)):
+			for cidx in range(len(self.categs)):
+				self.files[sidx][cidx].close()
+				f = open(self.paths[sidx][cidx], "r")
+				lines = [":".join(l.split(":")[1:4]) for l in f.readlines()[2:]]
+				f.close()
+
+				f = open(self.paths[sidx][cidx].replace(".txt", "_pick.txt"), "a")
+				for l in lines:
+					f.write(l + "\n")
+				f.close()
+				self.files[sidx][cidx] = open(self.paths[sidx][cidx], "a")
+
+
 	## exportAsText
 	##---------------------------------------------------------------
 	def exportAsText(self):
 		## returns the content of the event list as a string in readable form
+
+		self.vb.call("evlist", "exportAsText", [self], "Exporting the evlist as TXT file.")
 
 		self.close()
 		text = " : ".join(self.vars) + "\n"
@@ -113,6 +164,8 @@ class evlist:
 	##---------------------------------------------------------------
 	def free(self):
 
+		self.vb.call("evlist", "free", [self], "Freeing memory.")
+
 		for sidx in range(len(sources)):
 			for cidx in range(len(categs)):
 				lib.rmFile(self.paths[sidx][cidx])
@@ -121,6 +174,8 @@ class evlist:
 	## injectScanFile
 	##---------------------------------------------------------------
 	def injectScanFile(self, sidx, cidx, path):
+
+		self.vb.call("evlist", "injectScanFile", [self, sidx, cidx, path], "Injecting an event list in a file done with TTree::Scan.")
 
 		f = open(path, "r")
 		full = f.readlines()

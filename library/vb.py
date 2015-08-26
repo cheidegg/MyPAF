@@ -9,8 +9,8 @@
 #################################################################
 #################################################################
 
-import datetime, os, sys
-import mypaf
+import sys
+import lib, mypaf
 
 
 ## vb
@@ -36,6 +36,13 @@ class vb:
 		self.start()
 
 
+	## call
+	##---------------------------------------------------------------
+	def call(self, classname, functionname, arguments, description):
+		if self.vb > 0: return 
+		self.talk("CALL " + classname + "." + functionname + "(" + ", ".join([str(a) for a in arguments]) + "): " + description, 0)
+
+
 	## end
 	##---------------------------------------------------------------
 	def end(self):
@@ -46,44 +53,67 @@ class vb:
 	## error
 	##---------------------------------------------------------------
 	def error(self, message):
-		self.talk("ERROR: " + message, True)
+		self.talk("ERROR: " + message + " EXITING.", 0, True)
 
 
 	## move
 	##--------------------------------------------------------------- 
 	def move(self):
-
 		self.log.close()
-		os.system("mv " + self.path + "log.out " + self.mypaf.prodpath + "log.out")
-		self.path = self.mypaf.prodpath
+		lib.mvFile(self.path + "log.out", self.mypaf.prodpathmypaf + "log.out")
+		self.path = self.mypaf.prodpathmypaf
 		self.log  = open(self.path + "log.out", "a")
+
+
+	## modulein
+	##--------------------------------------------------------------- 
+	def modulein(self):
+		self.talk("LOADING INPUT FOR MODULE " + self.mypaf.module.upper(), 2)
+
+
+	## moduleout
+	##--------------------------------------------------------------- 
+	def moduleout(self):
+		self.talk("PREPARING OUTPUT FOR MODULE " + self.mypaf.module.upper(), 2)
+
+
+	## modulerun
+	##--------------------------------------------------------------- 
+	def modulerun(self):
+		self.talk("RUNNING MODULE " + self.mypaf.module.upper(), 2)
+
+
+	## setVB
+	##--------------------------------------------------------------- 
+	def setVB(self, setvb):
+		self.vb    = setvb
 
 
 	## start
 	##--------------------------------------------------------------- 
 	def start(self):
-		self.talk("STARTING MyPAF - THE my PURPOSE ANALYSIS FRAMEWORK")
-		if   self.mypaf.imodule == 1: self.talk("INITIALIZING TREE")
-		elif self.mypaf.imodule == 2: self.talk("INITIALIZING DRAW")
-		elif self.mypaf.imodule == 3: self.talk("INITIALIZING PLOT")
-		elif self.mypaf.imodule == 4: self.talk("INITIALIZING SCAN")
-		elif self.mypaf.imodule == 5: self.talk("INITIALIZING STAT")
-		elif self.mypaf.imodule == 6: self.talk("INITIALIZING HIST")
-		elif self.mypaf.imodule == 7: self.talk("INITIALIZING PUBL")
-		else: self.error("nothing to initialize")
+		self.talk("STARTING MyPAF - THE my PURPOSE ANALYSIS FRAMEWORK", 2)
 
 
 	## talk
 	##--------------------------------------------------------------- 
-	def talk(self, message, exit = False):
-		if exit: message += ". exiting..."
-		if self.vb > 0: print "> " + message
-		self.log.write(message + "\n")
-		if exit: sys.exit(0)
+	def talk(self, message, level = 0, exit = False):
+		if exit: 
+			message += ". exiting..."
+		if level >= self.vb: 
+			print "> " + message
+		if not self.log.closed:
+			self.log.write(message + "\n")
+		if exit: 
+			sys.exit(0)
 
 
 	## warning
 	##--------------------------------------------------------------- 
 	def warning(self, message):
-		self.talk("WARNING: " + message, False)
+		self.talk("WARNING: " + message, 0, False)
+
+
+
+
 

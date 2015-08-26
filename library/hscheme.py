@@ -44,16 +44,20 @@ class hscheme:
 		self.errorstate = False
 		self.executed   = False
 
-		self.check()
 		self.mypaf      = mypaf
 		self.db         = mypaf.db
 		self.vb         = mypaf.vb
+
+		self.vb.call("hscheme", "__init__", [self, mypaf, type, name, definition, argstring], "Initializing the hscheme class.")
+		self.check()
 
 
 	## build
 	##---------------------------------------------------------------
 	def build(self):
 		## first run the argument schemes, then run this scheme
+
+		self.vb.call("hscheme", "build", [self], "Building the hscheme.")
 
 		if not self.isTrivial():
 
@@ -75,9 +79,10 @@ class hscheme:
 
 			## draw result
 			if self.isPrimary():
-					self.h.resetArgs(self.argstring)
+					self.h.alist.resetArgs(self.argstring)
 					self.h.setP(True)
 					self.h.draw()
+					#self.h.draw("", 0, True)
 
 			## reset argument schemes to initial	
 			if self.type != "draw":
@@ -95,7 +100,8 @@ class hscheme:
 		## check for number of arguments in definition
 		## check if all arguments are hschemes themselves
 		## check for arguments in arglist
-		print "nothing to do"
+
+		self.vb.call("hscheme", "check", [self], "Performing basic checks for the hscheme.")
 
 
 	## draw
@@ -105,6 +111,8 @@ class hscheme:
 		## first, reload the trivial scheme which reproduces the histogram for that scheme
 		## second, put the histogram into the non-trivial scheme
 
+		self.vb.call("hscheme", "draw", [self], "Drawing a non-trivial scheme with trivial input.")
+
 		if self.type == "draw" and len(self.schemes) == 1:
 			self.schemes[0].reload(self.alist.get("var"))
 			self.h = self.schemes[0].getHist()
@@ -113,12 +121,16 @@ class hscheme:
 	## getHist
 	##---------------------------------------------------------------
 	def getHist(self):
+
+		self.vb.call("hscheme", "getHist", [self], "Returning the histogram of the scheme.")
 		return self.h
  
 
 	## isPrimary
 	##---------------------------------------------------------------
 	def isPrimary(self):
+
+		self.vb.call("hscheme", "isPrimary", [self], "Testing if the scheme is primary.")
 
 		if self.isTrivial()     : return True
 
@@ -139,6 +151,8 @@ class hscheme:
 	##---------------------------------------------------------------
 	def isTrivial(self):
 
+		self.vb.call("hscheme", "isTrivial", [self], "Testing if the scheme is trivial.")
+
 		if self.type == "hist"  : return True
 		if self.type == "elhist": return True
 		if self.type == "eyhist": return True
@@ -156,6 +170,8 @@ class hscheme:
 		## event lists produce hists for every variable)
 		## when drawing the trivial hscheme, we need to reset the histogram
 
+		self.vb.call("hscheme", "reload", [self, arg], "Reloading the scheme and its histogram if its trivial.")
+
 		if self.isTrivial() and self.type != "hist":	
 			self.h = self.obj.exportAsHist(arg)
 
@@ -163,6 +179,7 @@ class hscheme:
 	## setExecuted
 	##---------------------------------------------------------------
 	def setExecuted(self):
+		self.vb.call("hscheme", "setExectued", [self], "Setting the executed parameter to true.")
 		self.executed = True
 
 
@@ -172,6 +189,7 @@ class hscheme:
 		## check if one of the definition arguments is also a scheme
 		## if so, this scheme needs to be run first, so we save it for later
 
+		self.vb.call("hscheme", "setSchemes", [self, schemelist], "Checking if one of the arguments in the definition is also a scheme.")
 		self.schemes = []
 
 		if not self.isTrivial():
@@ -192,6 +210,8 @@ class hscheme:
 	## setTrivial
 	##---------------------------------------------------------------
 	def setTrivial(self, obj):
+
+		self.vb.call("hscheme", "setTrivial", [self, obj], "Setting trivial scheme for the hscheme.")
 
 		if not self.isTrivial(): return False
 

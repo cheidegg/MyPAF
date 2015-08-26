@@ -10,7 +10,7 @@
 #################################################################
 
 import array, copy, ROOT
-import args, clist, lib, hstyle, rstuff, schemes, source
+import args, clist, lib, hstyle, rstuff, schemes, source, styleargs
 
 
 ## hist
@@ -21,27 +21,29 @@ class hist:
 
 	## __init__
 	##---------------------------------------------------------------
-	def __init__(self, mypaf, name, binargs, labels, argstring = ""):
+	def __init__(self, mypaf, name, dim = 1, argstring = ""):
 
 		self.name    = name
-		self.binargs = binargs
+		self.dim     = dim
 		self.p       = False
 		self.built   = False
 
 		self.alist   = args.args(argstring)
+		self.salist  = styleargs.styleargs(self.alist.get("style"), "1", lib.useVal("ROOT.kBlack", self.alist.get("color")))
 		self.mypaf   = mypaf
 		self.db      = mypaf.db
 		self.vb      = mypaf.vb
+		self.vb.call("hist", "__init__", [self, mypaf, name, dim, argstring], "Initializing the hist class.")
 
+		self.setBinArgs()
 		self.setParent()
-		self.setLabels(labels)
-		self.setD()
-		#self.setGen()
+		self.setLabels()
 
 
 	## addHist
 	##---------------------------------------------------------------
 	def addHist(self, hist, coeffs = []):
+		self.vb.call("hist", "addHist", [self, hist, coeffs], "Adding a hist to this instance.")
 		self.check(hist.dim)
 		for sidx in range(len(self.h)):
 			for cidx in range(len(self.h[0])):
@@ -50,147 +52,10 @@ class hist:
 				self.h[sidx][cidx].Add(hist.getH(sidx, cidx), coeff)
 
 
-	## applyArgs
-	##---------------------------------------------------------------
-	def applyArgs(self, pad = 0):
-
-
-		## reset source (for hists in schemes, they only have one hist and source)
-		if self.alist.has("source") and len(self.sources) == 1:
-			self.sources = None
-			self.sources = [source.source(self.mypaf, self.alist.get("source"))]
-
-		## load default style if given
-		self.defaults = []
-		if self.alist.has("style"):
-			self.defaults  = self.db.getRow("hstyles", "name == '" + self.alist.get("style") + "'")
-
-		## apply style stuff	
-		self.applyGrid  ()
-		self.applyLog   (pad)
-		self.applyErrors()
-		self.applyNorm  ()
-
-
-	## applyErrors
-	##---------------------------------------------------------------
-	def applyErrors(self):
-
-		if self.alist.has("errors")                           : errors = self.alist.get("errors")
-		elif hasattr(self, "defaults") and self.defaults != []: errors = self.defaults[4]
-		else                                                  : errors = "none"
-
-		if errors == "bars":
-			self.d += " e"
-
-
-	## applyGrid
-	##---------------------------------------------------------------
-	def applyGrid(self):
-
-		if self.alist.has("grid")                             : grid  = self.alist.get("grid")
-		elif hasattr(self, "defaults") and self.defaults != []: grid  = self.defaults[2]
-		else                                                  : grid  = "n"
-
-		if grid == "y":
-			for pad in self.mypaf.pads:
-				pad.SetGrid(1, 1)
-
-
-	## applyLog
-	##---------------------------------------------------------------
-	def applyLog(self, pad = 0):
-
-		if self.alist.has("log")                              : log = self.alist.get("log")
-		elif hasattr(self, "defaults") and self.defaults != []: log = self.defaults[3]
-		else                                                  : log = "none"
-
-		pad = self.mypaf.pads[pad]
-
-		if log.find("x") != -1: pad.SetLogx()
-		if log.find("y") != -1: pad.SetLogy()
-		if log.find("z") != -1: pad.SetLogz()
-
-
-	## applyNorm
-	##---------------------------------------------------------------
-	def applyNorm(self):
-
-		if self.alist.has("norm")                             : norm  = self.alist.get("norm")
-		elif hasattr(self, "defaults") and self.defaults != []: norm  = self.defaults[5]
-		else                                                  : norm  = "none"
-
-
-		## scale according to lumi and cross section
-		if norm == "lumi":
-			for sidx in range(len(self.h)):
-				for cidx in range(len(self.h[sidx])):
-					self.h[sidx][cidx].Scale(float(self.mypaf.input.cfg.getVar("luminosity")) * float(self.sources[sidx].getXSec()) / float(self.sources[sidx].getNEvts()))
-		## where does the xsec and nevts come from?
-
-		## scale all MC to data
-		elif norm == "data":
-			dids = []
-			for sidx in range(len(self.h)):
-				if self.sources[sidx].getType() == "d":
-					dids.append(sidx)
-
-			ints = [0.0 for cidx in range(len(self.h[sidx]))]
-			for cidx in range(len(self.h[0])):
-				for sidx in dids:
-					ints += self.h[sidx][cidx].Integral()
-
-			for sidx in range(len(self.h)):
-				if not sidx in dids:
-					for cidx in range(len(self.h[sidx])):
-						if self.h[sidx][cidx].Integral() > 0:
-							self.h[sidx][cidx].Scale(ints[cidx].Integral() / self.h[sidx][cidx].Integral())
-
-
-		## scale everything to unity
-		elif norm == "unity":
-			for sidx in range(len(self.h)):
-				for cidx in range(len(self.h[sidx])):
-					if self.h[sidx][cidx].Integral() > 0:
-						self.h[sidx][cidx].Scale(1.0 / self.h[sidx][cidx].Integral())
-	
-
-	## applySourceInfo
-	##---------------------------------------------------------------
-	def applySourceInfo(self):
-
-		for sidx in range(len(self.h)):
-
-			col = eval(self.sources[sidx].color)
-			if self.dim == 2 and self.d.find("text") != -1: 
-				col = ROOT.kBlack
-			acol = ""
-			if self.alist.has("color"): 
-				acol = str(eval(self.alist.get("color")))
-
-			color       = lib.argsWin(ROOT.kBlack, col                           , acol                         )
-			fillstyle   = lib.argsWin(1001       , self.sources[sidx].fillstyle  , self.alist.get("fillstyle"  ))
-			linestyle   = lib.argsWin(1          , self.sources[sidx].linestyle  , self.alist.get("linestyle"  ))
-			linewidth   = lib.argsWin(2          , self.sources[sidx].linewidth  , self.alist.get("linewidth"  ))
-			markerstyle = lib.argsWin(8          , self.sources[sidx].markerstyle, self.alist.get("markerstyle"))
-			markersize  = lib.argsWin(1.8        , self.sources[sidx].markersize , self.alist.get("markersize" ))
-
-			for cidx in range(len(self.h[sidx])):
-				#self.h[sidx][cidx].SetMaximum(0.7)
-				#self.h[sidx][cidx].SetMinimum(0.0)
-				self.h[sidx][cidx].SetFillColor(color)
-				self.h[sidx][cidx].SetFillStyle(fillstyle)
-				self.h[sidx][cidx].SetLineColor(color)
-				self.h[sidx][cidx].SetLineStyle(linestyle)
-				self.h[sidx][cidx].SetLineWidth(linewidth)
-				self.h[sidx][cidx].SetMarkerColor(color)
-				self.h[sidx][cidx].SetMarkerStyle(markerstyle)
-				self.h[sidx][cidx].SetMarkerSize(markersize)
-
-
 	## build
 	##---------------------------------------------------------------
 	def build(self, setsources, setcategs):
+		self.vb.call("hist", "build", [self], "Building the histograms.")
 
 		self.sources = [source.source(self.mypaf, s) for s in setsources]
 		self.categs  = setcategs
@@ -200,49 +65,33 @@ class hist:
 			appender = []
 			for c in self.categs:
 				hc = copy.deepcopy(self.parent)
+				#hc = rstuff.copyTH1(self.parent)
 				hc.SetName(s.name + ":=" + c + ":=" + self.name)
 				appender.append(hc)
 
 			self.h.append(appender)
 
 		self.built = True	
-		
+		self.normalized = [[False for cidx in range(len(self.categs))] for sidx in range(len(self.sources))]
+		self.drawn      = [[False for cidx in range(len(self.categs))] for sidx in range(len(self.sources))]
+	
 
 	## check
 	##---------------------------------------------------------------
 	def check(self, dim):
+		self.vb.call("hist", "check", [self], "Performing basic dimension checks.")
 
 		if not hasattr(self, "dim"): 
 			self.dim = dim
 		else: 
 			if self.dim != dim: 
-				self.vb.error("trying to re-initialize a histogram of wrong dimension")
-
-
-	## detachArgs
-	##---------------------------------------------------------------
-	def detachArgs(self):
-		## need to reset default status of canvas and pad after plotting
-
-		self.detachGrid()
-		self.detachLog()
-
-
-	## detachGrid
-	##---------------------------------------------------------------
-	def detachGrid(self):
-		self.mypaf.applyGrid()
-
-
-	## detachLog	
-	##---------------------------------------------------------------
-	def detachLog(self):
-		self.mypaf.applyLog()
+				self.vb.error("Trying to re-initialize a histogram of wrong dimension.")
 
 
 	## divHist
 	##---------------------------------------------------------------
 	def divHist(self, hist, coeffs = [], error = ''):
+		self.vb.call("hist", "divHist", [self, hist, coeffs, error], "Dividing this hist instance by another hist.")
 		self.check(hist.dim)
 		for sidx in range(len(self.h)):
 			for cidx in range(len(self.h[0])):
@@ -253,18 +102,18 @@ class hist:
 
 	## draw
 	##---------------------------------------------------------------
-	def draw(self, option = "", pad = 0, direct = False):
+	def draw(self, option = "", pad = 0, plot = True, save = True):
 
+		self.vb.call("hist", "drawing", [self, option, pad, plot, save], "Drawing the histograms in this instance.")
 		if option != "": option = " " + option
 
-		self.prepareDraw(pad)
+		self.runPreDraw(pad)
 
 		for sidx in range(len(self.h)):
 			for cidx in range(len(self.h[0])):
-				self.mypaf.pads[pad].cd()
-				self.drawH(sidx, cidx, option, direct)
+				self.drawH(sidx, cidx, pad, option, plot, save)
 
-		self.detachArgs()
+		self.mypaf.setGlobalStyle()
 
 
 	## drawArrow
@@ -274,22 +123,28 @@ class hist:
 		## for all of them
 		## format of drawlatex argument is x1,y1,x2,y2,strength,color
 
-		if self.alist.has("drawarrow"):
+		self.vb.call("hist", "drawArrow", [self], "Drawing an arrow.")
+		arrows = lib.useArr([""], self.mypaf.input.cfg.getVars("drawarrow"), self.salist.getAll("drawarrow"), self.alist.getAll("drawarrow")) 
 
-			li = [l.split(",") for l in self.alist.getAll("drawarrow")]
-			ar = []
-
+		if arrows != [""]:
+			li = [l.split(",") for l in arrows]
+			ln = []
 			for ii, l in enumerate(li):
-				ar.append(ROOT.TArrow(l[0], l[1], l[2], l[3], l[4], ">"))
-				ar[ii].SetLineColor(l[5])
-				ar[ii].Draw()
+				ln.append(rstuff.arrow(int(lib.useVal("2", l[4])), int(lib.useVal("7", l[5])), eval(lib.useVal(str(ROOT.kBlack), l[6]))))
+				ln[ii].DrawArrow(float(l[0]) * self.parent.GetXaxis().GetXmin(), \
+				                 float(l[1]) * self.parent.GetYaxis().GetXmin(), \
+				                 float(l[2]) * self.parent.GetXaxis().GetXmax(), \
+				                 float(l[3]) * self.parent.GetYaxis().GetXmax())
 
 	
 	## drawBox
 	##---------------------------------------------------------------
 	def drawBox(self):
 
-		if self.alist.has("drawbox"):
+		self.vb.call("hist", "drawBox", [self], "Drawing a box.")
+		boxes = lib.useArr([""], self.mypaf.input.cfg.getVars("drawbox"), self.salist.getAll("drawbox"), self.alist.getAll("drawbox")) 
+
+		if boxes != [""]:
 			print "draw a box"
 
 
@@ -297,7 +152,10 @@ class hist:
 	##---------------------------------------------------------------
 	def drawCircle(self):
 	
-		if self.alist.has("drawcircle"):
+		self.vb.call("hist", "drawCircle", [self], "Drawing a circle.")
+		circles = lib.useArr([""], self.mypaf.input.cfg.getVars("drawcircle"), self.salist.getAll("drawcircle"), self.alist.getAll("drawcircle")) 
+
+		if circles != [""]:
 
 			li = [l.split(",") for l in self.alist.getAll("drawcircle")]
 			ci = []
@@ -308,12 +166,12 @@ class hist:
 	##---------------------------------------------------------------
 	def drawErrorBand(self, sidx, cidx):
 
-		if self.alist.has("errors")                           : errors = self.alist.get("errors")
-		elif hasattr(self, "defaults") and self.defaults != []: errors = self.defaults[4]
-		else                                                  : errors = "none"
+		self.vb.call("hist", "drawErrorBand", [self, sidx, cidx], "Drawing error bands.")
+		errors = lib.useVal("none", self.mypaf.input.cfg.getVar("errors"), self.salist.get("errors"), self.alist.get("errors"))
 
 		if errors == "band":
 			hband = copy.deepcopy(self.h[sidx][cidx])
+			#hband = rstuff.copyTH1(self.h[sidx][cidx])
 			hband.SetFillColor(ROOT.kGray)
 			hband.SetFillStyle(3001)
 			hband.SetLineColor(ROOT.kGray)
@@ -322,52 +180,23 @@ class hist:
 
 	## drawH
 	##---------------------------------------------------------------
-	def drawH(self, sidx, cidx, option = "", direct = False):
+	def drawH(self, sidx, cidx, pad = 0, option = "", plot = True, save = True):
 
-		self.vb.talk("Drawing histogram " + self.name + " with " + str(self.h[sidx][cidx].GetEntries()) + " entries for source " + self.sources[sidx].name + " and category " + self.categs[cidx] + ".")
+		self.vb.call("hist", "drawH", [self, sidx, cidx, pad, option, plot, save], "Drawing a histogram from this instance.")
 
-		self.drawRange(sidx, cidx)
-		self.h[sidx][cidx].Draw(self.d + option)
-		if not direct:
+		if self.drawn[sidx][cidx] == True: return
+
+		self.vb.talk("Drawing histogram " + self.name + " with " + str(self.h[sidx][cidx].GetEntries()) + " entries for source " + self.sources[sidx].name + " and category " + self.categs[cidx] + ".", 1)
+
+		self.mypaf.pads[pad].cd()
+		self.h[sidx][cidx].Draw(self.d + " " + option)
+		ROOT.gPad.Update()
+		if save:
 			self.saveHist(sidx, cidx)
-		if self.p:
-			self.drawArrow()
-			self.drawBox()
-			self.drawCircle()
-			self.drawErrorBand(sidx, cidx)
-			self.drawLatex()
-			self.drawLine()
-			self.drawNote()
-			if not direct:
-				self.mypaf.saveCanv(self.name + "_" + self.sources[sidx].name + "_" + self.categs[cidx])
-
-
-	## drawLabels
-	##---------------------------------------------------------------
-	def drawLabels(self):
-
-		pad = ROOT.gPad
-		factor = lib.getPadSize(pad)
-
-		##print "drawing labels for " + self.name + " (" + str(self.labels) + ")"	
-		for sidx in range(len(self.h)):
-			for cidx in range(len(self.h[0])):
-				self.h[sidx][cidx].SetTitle("")
-				self.h[sidx][cidx].GetXaxis().SetTitle(self.labels[0])
-				self.h[sidx][cidx].GetXaxis().SetLabelSize(0.045 / factor)
-				self.h[sidx][cidx].GetXaxis().SetTitleSize(0.045 / factor)
-				self.h[sidx][cidx].GetXaxis().SetNdivisions(505)
-				self.h[sidx][cidx].GetYaxis().SetTitle(self.labels[1])
-				self.h[sidx][cidx].GetYaxis().SetLabelSize(0.045 / factor)
-				self.h[sidx][cidx].GetYaxis().SetTitleSize(0.045 / factor)
-				self.h[sidx][cidx].GetYaxis().SetTitleOffset(factor)
-				self.h[sidx][cidx].GetYaxis().SetNdivisions(505)
-				if len(self.labels) > 2: 
-					self.h[sidx][cidx].GetZaxis().SetTitle(self.labels[2])
-					self.h[sidx][cidx].GetZaxis().SetLabelSize(0.045 / factor)
-					self.h[sidx][cidx].GetZaxis().SetTitleSize(0.045 / factor)
-					self.h[sidx][cidx].GetZaxis().SetTitleOffset(factor)
-					self.h[sidx][cidx].GetZaxis().SetNdivisions(505)
+		self.runPostDraw(sidx, cidx, option)
+		if self.p and plot:
+			self.mypaf.saveCanv(self.name + "_" + self.sources[sidx].name + "_" + self.categs[cidx])
+		self.drawn[sidx][cidx] = True
 
 
 	## drawLatex
@@ -377,9 +206,12 @@ class hist:
 		## for all of them
 		## format of drawlatex argument is x,y,align,textfont,textsize,textcolor,text(_)
 
-		if self.alist.has("drawlatex"):
+		self.vb.call("hist", "drawLatex", [self], "Drawing latex objects.")
+		latexes = lib.useArr([""], self.mypaf.input.cfg.getVars("drawlatex"), self.salist.getAll("drawlatex"), self.alist.getAll("drawlatex")) 
 
-			li = [l.split(",") for l in self.alist.getAll("drawlatex")]
+		if latexes != [""]:
+
+			li = [l.split(",") for l in latexes]
 			lx = []
 
 			for ii, l in enumerate(li):
@@ -395,89 +227,73 @@ class hist:
 	##---------------------------------------------------------------
 	def drawLine(self):
 
-		if self.alist.has("drawline"):
-			li = [l.split(",") for l in self.alist.getAll("drawlatex")]
+		self.vb.call("hist", "drawLine", [self], "Drawing lines.")
+		lines = lib.useArr([""], self.mypaf.input.cfg.getVars("drawline"), self.salist.getAll("drawline"), self.alist.getAll("drawline")) 
+
+		if lines != [""]:
+			li = [l.split(",") for l in lines]
 			ln = []
-
 			for ii, l in enumerate(li):
-				ln.append(rstuff.line(l[0], l[1], l[2], l[3], int(lib.useVal("2", l[4])), int(lib.useVal("7", l[5])), eval(lib.useVal(str(ROOT.kBlack), l[6])))) 
-				ln.Draw()
-
-
-	## drawRange
-	##---------------------------------------------------------------
-	def drawRange(self, sidx, cidx):
-
-		## check if
-		## - need min to be set to 0
-		## - if using log scale, then set to 0.001 instead
-		## - etc
-	
-		mm = self.getMinMax(self.h[sidx][cidx])
-
-		#xmin, xmax = lib.getHistMinMax(mm[0][0], mm[0][1], self.hasLogScale("x"))
-		#self.h[sidx][cidx].GetXaxis().SetRangeUser(xmin, xmax)
-
-		if self.alist.has("ymin") and self.alist.has("ymax"):
-			ymin = float(self.alist.get("ymin"))
-			ymax = float(self.alist.get("ymax"))
-		else: 
-			ymin, ymax = lib.getHistMinMax(mm[1][0], mm[1][1], self.hasLogScale("y")) 
-
-		## only for TH1F so far
-		if self.dim == 1:
-			ymax = self.h[sidx][cidx].GetMaximum() * 1.2
-			ymin = 0.
-			if self.hasLogScale("y"): 
-				ymin = 0.7
-				ymax = ymax*1.25 ## in order to get GetMaximum() * 1.5
-			self.h[sidx][cidx].GetYaxis().SetRangeUser(ymin, ymax)
-
-
-		#if len(mm) > 4:
-		#	zmin, zmax = lib.getHistMinMax(mm[2][0], mm[2][1], self.hasLogScale("z"))
-		#	self.h[sidx][cidx].GetZaxis().SetRangeUser(zmin, zmax)
-
+				ln.append(rstuff.line(int(lib.useVal("2", l[4])), int(lib.useVal("7", l[5])), eval(lib.useVal(str(ROOT.kBlack), l[6]))))
+				ln[ii].DrawLine(float(l[0]) * self.parent.GetXaxis().GetXmin(), \
+				                float(l[1]) * self.parent.GetYaxis().GetXmin(), \
+				                float(l[2]) * self.parent.GetXaxis().GetXmax(), \
+				                float(l[3]) * self.parent.GetYaxis().GetXmax())
+		
 
 	## drawNote
 	##---------------------------------------------------------------
 	def drawNote(self):
 
-		if self.alist.has("note")                             : note  = args.get("note")
-		elif hasattr(self, "defaults") and self.defaults != []: note  = self.defaults[1]
-		else                                                  : note  = "cms"
+		self.vb.call("hist", "drawNote", [self], "Drawing lumi or CMS notes.")
+		note = lib.useVal("", self.mypaf.input.cfg.getVar("note"), self.salist.get("note"), self.alist.get("note")) 
 
-		note = ""
 		if note == "cms":
 			mcOnly = True
 			rstuff.cms(self.mypaf.canvas, float(self.mypaf.input.cfg.getVar("luminosity")), float(self.mypaf.input.cfg.getVar("energy")), mcOnly)
 
 
+	## drawSingle
+	##---------------------------------------------------------------
+	def drawSingle(self, sidx, cidx, pad, option = "", plot = True, save = True):
+
+		self.runPreDraw(pad)
+		self.drawH(sidx, cidx, pad, option, plot, save)
+		self.mypaf.setGlobalStyle()
+
+
+	## drawStats
+	##---------------------------------------------------------------
+	def drawStats(self, sidx, cidx, drawmode):
+		## draws the stats box for the histogram
+
+		self.vb.call("hist", "drawStats", [self, sidx, cidx, drawmode], "Drawing the stats box.")
+		stats = lib.useVal("n", self.mypaf.cfg.getVar("stats"), self.salist.get("stats"), self.alist.get("stats")) 
+
+		if stats == "n": return
+		si = stats.split(",")
+
+		mode = 111100
+		if lib.isInt(si[0]): mode = int(si[0])
+
+		ps = self.h[sidx][cidx].FindObject("stats")
+		ps.SetX1NDC(float(si[1]))
+		ps.SetY1NDC(float(si[2]))
+		ps.SetOptStat(mode)
+
+
 	## fill
 	##---------------------------------------------------------------
 	def fill(self, sidx, cidx, value):
+		self.vb.call("hist", "fill", [self, sidx, cidx, value], "Filling a histogram.")
 		self.h[sidx][cidx].fill(value)
-
-
-	## getBinArgs
-	##---------------------------------------------------------------
-	def getBinArgs(self, dim = "x"):
-
-		if self.alist.has("n" + dim + "bins") and self.alist.has(dim + "bins"):
-			eval("bins = [" + self.args.get(dim + "bins") + "]")
-			return int(self.alist.get("n" + dim + "bins")), array.array('d', bins)
-
-		if self.alist.has("n" + dim + "bins") and self.alist.has(dim + "min") and self.alist.has(dim + "max"):
-
-			return int(self.alist.get("n" + dim + "bins")), lib.bins(int(self.alist.get("n" + dim + "bins")), float(self.alist.get(dim + "min")), float(self.alist.get(dim + "max")))
-
-		return 0, []
 
 
 	## getBins
 	##---------------------------------------------------------------
 	def getBins(self):
 
+		self.vb.call("hist", "getBins", [self], "Retrieving the bins of a histogram.")
 		bins = [clist.clist(lib.toList(self.parent.GetXaxis().GetXbins()))]
 		if self.dim == 2:
 			bins.append(clist.clist(lib.toList(self.parent.GetYaxis().GetXbins())))
@@ -490,60 +306,35 @@ class hist:
 	## getDim
 	##---------------------------------------------------------------
 	def getDim(self):
+		self.vb.call("hist", "getDim", [self], "Retrieving the dimension of a histogram.")
 		return self.dim
 
 
 	## getH
 	##---------------------------------------------------------------
 	def getH(self, sidx, cidx):
+		self.vb.call("hist", "getH", [self, sidx, cidx], "Retrieving a histogram.")
 		return self.h[sidx][cidx]
 
 
 	## getLName
 	##---------------------------------------------------------------
 	def getLName(self, sidx, cidx):
+		self.vb.call("hist", "getLName", [self, sidx, cidx], "Retrieving the legend name.")
 		return self.sources[sidx].lname
-
-
-	## getMinMax
-	##---------------------------------------------------------------
-	def getMinMax(self, hist):
-
-		mins = []
-		maxs = []	
-	
-		mins.append(hist.GetXaxis().GetXmin())
-		if self.dim >= 2:
-			mins.append(hist.GetYaxis().GetXmin())
-		else:	
-			mins.append(hist.GetMinimum())
-		if self.dim == 3:
-			mins.append(hist.GetZaxis().GetXmin())
-		else:
-			mins.append(hist.GetMinimum())
-
-		maxs.append(hist.GetXaxis().GetXmax())
-		if self.dim >= 2:
-			maxs.append(hist.GetYaxis().GetXmax())
-		else:	
-			maxs.append(hist.GetMaximum())
-		if self.dim == 3:
-			maxs.append(hist.GetZaxis().GetXmax())
-		else:
-			maxs.append(hist.GetMaximum())
-	
-		return [mins, maxs]
 
 
 	## getParent
 	##---------------------------------------------------------------
 	def getParent(self):
+		self.vb.call("hist", "getParent", [self], "Retrieving the parent of this instance.")
 		return self.parent
 
 
 	## hasLogScale
 	##---------------------------------------------------------------
 	def hasLogScale(self, dim = "y"):
+		self.vb.call("hist", "hasLogScale", [self, dim], "Checking if the current pad has log scale.")
 
 		if   dim == "x" and ROOT.gPad.GetLogx() == 1: return True
 		elif dim == "y" and ROOT.gPad.GetLogy() == 1: return True
@@ -554,17 +345,24 @@ class hist:
 
 	## inject
 	##---------------------------------------------------------------
-	def inject(self, hist, sidx, cidx):
+	def inject(self, hist, sidx, cidx, sample = ""):
 
-		self.check(hist.GetDimension())
-		self.h[sidx][cidx].Add(hist) 
+		self.vb.call("hist", "inject", [self, hist, sidx, cidx], "Injecting a histogram to this instance.")
+		if self.alist.get("profile") == "y":
+			self.h[sidx][cidx] = copy.deepcopy(hist)
+			#self.h[sidx][cidx] = rstuff.copyTH1(hist)
+		else:
+			self.check(hist.GetDimension())
+			self.h[sidx][cidx].Add(hist)
 
 
 	## injectHist
 	##---------------------------------------------------------------
 	def injectHist(self, hist):
 
+		self.vb.call("hist", "injectHist", [self, hist], "Injecting another hist to this instance.")
 		self.check(hist.dim)
+
 		if len(self.sources) == len(hist.sources) and len(self.categs) == len(hist.categs):
 			for sidx in range(len(self.sources)):
 				for cidx in range(len(self.categs)):
@@ -576,10 +374,11 @@ class hist:
 	##---------------------------------------------------------------
 	def loadInitial(self):
 
+		self.vb.call("hist", "loadInitial", [self], "Loading the initial configuration of this instance.")
 		if hasattr(self, "i_argstring") and hasattr(self, "i_ints"):
 
 			self.alist.resetArgs(self.i_argstring)
-			self.applyArgs()
+			self.runPreDraw()
 
 			for sidx in range(len(self.h)):
 				for cidx in range(len(self.h[0])):
@@ -593,6 +392,7 @@ class hist:
 	## multHist
 	##---------------------------------------------------------------
 	def multHist(self, hist, coeffs = [], error = ''):
+		self.vb.call("hist", "multHist", [self, hist, coeffs, error], "Multiply this instance by another hist.")
 		self.check(hist.dim)
 		for sidx in range(len(self.h)):
 			for cidx in range(len(self.h[0])):
@@ -601,19 +401,50 @@ class hist:
 				self.h[sidx][cidx].Multiply(self.h[sidx][cidx], hist.getH(sidx, cidx), 1.0, coeff, error)
 
 
-	## prepareDraw
+	## normalize
 	##---------------------------------------------------------------
-	def prepareDraw(self, pad):
+	def normalize(self):
+		self.vb.call("hist", "normalize", [self], "Normalize the histograms in this instance according to the 'norm' argument.")
 
-		self.applyArgs(pad)
-		self.applySourceInfo()
-		self.drawLabels()
+		norm =       lib.useVal("none", self.mypaf.input.cfg.getVar("norm")      , self.alist.get("norm"))
+		lumi = float(lib.useVal("0"   , self.mypaf.input.cfg.getVar("luminosity"), self.alist.get("luminosity")))
+
+		## scale according to lumi and cross section => already done in mypaf
+
+		## scale all MC to data
+		if norm == "data":
+			dids = []
+			for sidx in range(len(self.h)):
+				if self.sources[sidx].dstype == "d":
+					dids.append(sidx)
+
+			ints = [0.0 for cidx in range(len(self.h[sidx]))]
+			for cidx in range(len(self.h[0])):
+				for sidx in dids:
+					ints[cidx] += self.h[sidx][cidx].Integral()
+
+			for sidx in range(len(self.h)):
+				if not sidx in dids:
+					for cidx in range(len(self.h[sidx])):
+						if self.normalized[sidx][cidx]: continue
+						self.h[sidx][cidx] = lib.normalizeHistInt(self.h[sidx][cidx], ints[cidx])
+						self.normalized[sidx][cidx] = True
+
+
+		## scale everything to unity
+		elif norm == "unity":
+			for sidx in range(len(self.h)):
+				for cidx in range(len(self.h[sidx])):
+					if self.normalized[sidx][cidx]: continue
+					self.h[sidx][cidx] = lib.normalizeHistInt(self.h[sidx][cidx])
+					self.normalized[sidx][cidx] = True
 
 	
 	## rebin
 	##---------------------------------------------------------------
 	def rebin(self, hist, xbins, ybins = [], zbins = []):
 
+		self.vb.call("hist", "rebin", [self, hist, xbins, ybins, zbins], "Rebinning a histogram.")
 		## CH: only 1dim histograms to be rebinned??
 		#if self.dim == 3:
 		#	hist = hist.RebinAxis(array.array('d', xbins), hist.GetXaxis())
@@ -638,6 +469,7 @@ class hist:
 	##---------------------------------------------------------------
 	def rebinByParent(self, hist):
 
+		self.vb.call("hist", "rebinByParent", [self, hist], "Rebinning a histogram using the bin spacing of the parent.")
 		rebin = False
 		if lib.toList(self.parent.GetXaxis().GetXbins()) != lib.toList(hist.GetXaxis().GetXbins()): rebin = True
 		if self.dim == 2 and \
@@ -653,39 +485,93 @@ class hist:
 		return hist
 
 
+	## redraw
+	##---------------------------------------------------------------
+	def redraw(self, option = "", pad = 0, plot = True, save = True):
+
+		for sidx in range(len(self.h)):
+			for cidx in range(len(self.h[0])):
+				self.drawn[sidx][cidx] = False
+
+		self.draw(option, pad, plot, save)
+
+
+	## redrawH
+	##---------------------------------------------------------------
+	def redrawH(self, sidx, cidx, pad = 0, option = "", plot = True, save = True):
+
+		self.drawn[sidx][cidx] = False
+		self.drawH(sidx, cidx, pad, option, plot, save)
+
+
+	## redrawSingle
+	##---------------------------------------------------------------
+	def redrawSingle(self, sidx, cidx, pad, option = "", plot = True, save = True):
+
+		self.drawn[sidx][cidx] = False
+		self.drawSingle(sidx, cidx, pad, option, plot, save)
+
+
 	## reinit
 	##---------------------------------------------------------------
 	def reinit(self, hist):
 		## re-initialize this hist instance from another instance
 		## this basically is a copy of the hist instance hist into this one
 
-		self.binargs = hist.binargs
+		self.vb.call("hist", "reinit", [self, hist], "Reinitializing this instance using the settings of another hist.")
+
+		self.check(hist.getDim())
+
+		self.p       = hist.p
+		self.built   = False
 
 		self.alist.reinit(hist.alist)
+		self.salist.reinit(self.alist.get("style"), "1", lib.useVal("ROOT.kBlack", self.alist.get("color")))
 
-		self.parent = None
+		self.setBinArgs()
 		self.setParent()
-		self.setLabels(hist.labels)
-		self.setD()
-		self.setP(hist.p)
+		self.setLabels()
 
 		self.build([s.name for s in hist.sources], hist.categs)
 
 
-	## resetArgs
+	## runPostDraw
 	##---------------------------------------------------------------
-	def resetArgs(self, argstring = ""):
-		## old arguments are overwritten by new ones
+	def runPostDraw(self, sidx, cidx, option = ""):
 
-		self.alist.resetArgs(argstring)
+		self.vb.call("hist", "runPostDraw", [self, sidx, cidx, option], "Run post draw functions that add additional content to the histogram.")
+		self.drawArrow()
+		self.drawBox()
+		self.drawCircle()
+		self.drawErrorBand(sidx, cidx)
+		self.drawLatex()
+		self.drawLine()
+		self.drawNote()
+		ROOT.gPad.RedrawAxis()
+		self.drawStats(sidx, cidx, self.d + " " + option)
+
+
+	## runPreDraw
+	##---------------------------------------------------------------
+	def runPreDraw(self, pad = 0):
+
+		self.vb.call("hist", "runPreDraw", [self], "Run pre draw functions that prepare the instance for drawing.")
+		self.mypaf.pads[pad].cd()
+		self.mypaf.setGlobalStyle(self.alist.get("log"), self.alist.get("grid"), self.alist.get("digits"))
+		self.setD()
+		self.normalize()
+		self.setHistLabels(pad)
+		self.setRange()
+		self.setStats()
+		self.setStyle()
 
 
 	## saveHist
 	##---------------------------------------------------------------
 	def saveHist(self, sidx, cidx):
 
+		self.vb.call("hist", "saveHist", [self, sidx, cidx], "Saving a histogram.")
 		self.h[sidx][cidx] = lib.saveHist(self.mypaf.output.file, self.h[sidx][cidx], self.sources[sidx].name + "/" + self.categs[cidx] + "/" + self.name)
-
 
 
 	## setArgs
@@ -693,12 +579,44 @@ class hist:
 	def setArgs(self, argstring = ""):
 		## old arguments are added to new ones
 
+		self.vb.call("hist", "setArgs", [self, argstring], "Setting the arguments of this instance.")
 		self.alist.setArgs(argstring)
+
+
+	## setBinArgs
+	##---------------------------------------------------------------
+	def setBinArgs(self):
+
+		self.vb.call("hist", "setBinArgs", [self], "Setting the binargs of this instance.")
+		self.binargs = []
+
+		## 1d histogram
+		if self.dim >= 1:
+			oname = lib.useVal("var", self.alist.get("obs"), self.alist.get("obsx"))
+			obs   = self.db.getRow("observables", "name=='" + oname + "'")
+			if obs[7].strip() == "[]": bins = list(lib.bins(int(obs[4]), float(obs[5]), float(obs[6])))
+			else                     : bins = eval(obs[7])
+			self.binargs.append(clist.clist(lib.useArr(bins, lib.getBinArgs(self.alist, "x"))))
+
+		## 2d histogram
+		if self.dim >= 2:
+			obs2 = self.db.getRow("observables", "name=='" + self.alist.get("obsy") + "'")			
+			if obs2[7].strip() == "[]": bins = list(lib.bins(int(obs2[4]), float(obs2[5]), float(obs2[6])))
+			else                      : bins = eval(obs2[7])
+			self.binargs.append(clist.clist(lib.useArr(bins, lib.getBinArgs(self.alist, "y"))))
+
+		## 2d histogram
+		if self.dim == 3:
+			obs3 = self.db.getRow("observables", "name=='" + self.alist.get("obsz") + "'")			
+			if obs3[7].strip() == "[]": bins = list(lib.bins(int(obs3[4]), float(obs3[5]), float(obs3[6])))
+			else                      : bins = eval(obs3[7])
+			self.binargs.append(clist.clist(lib.useArr(bins, lib.getBinArgs(self.alist, "z"))))
 
 
 	## setBinContent
 	##---------------------------------------------------------------
 	def setBinContent(self, sidx, cidx, bin, value):
+		self.vb.call("hist", "setBinContent", [self, sidx, cidx, bin, value], "Setting the bin content in a histogram.")
 		self.h[sidx][cidx].SetBinContent(bin, value)
 
 
@@ -706,46 +624,113 @@ class hist:
 	##---------------------------------------------------------------
 	def setD(self):
 	
-		self.d = ""
+		self.vb.call("hist", "setD", [self], "Setting the draw mode from the arguments.")
+
+		default = ["hist", "colz text e", "iso"]
+		self.d = lib.useVal(default[self.dim - 1], self.mypaf.input.cfg.getVar("draw" + str(self.dim) + "mode").replace("_", " "), 
+		                                           self.alist.get("draw" + str(self.dim) + "mode").replace("_", " "))
 	
-		if self.dim == 1:
-			if self.alist.has("draw1mode"): self.d = self.alist.get("draw1mode").replace("_", " ")
-			else                          : self.d = "hist"
-	
-		elif self.dim == 2:
-			if self.alist.has("draw2mode"): self.d = self.alist.get("draw2mode").replace("_", " ")
-			else                          : self.d = "colz text e"
-	
-		elif self.dim == 3:
-			if self.alist.has("draw3mode"): self.d = self.alist.get("draw3mode").replace("_", " ")
-			else                          : self.d = "iso"
+		errors = lib.useVal("none", self.mypaf.input.cfg.getVar("errors"), self.alist.get("errors"))
+		if errors == "bars":
+			self.d += " e"
+
+
+	## setHistLabels
+	##---------------------------------------------------------------
+	def setHistLabels(self, pad = 0):
+
+		self.vb.call("hist", "setLabels", [self], "Setting the axis labels.")
+		factor     = lib.getPadSize(self.mypaf.pads[pad])
+		labelsizex = eval(lib.useVal("0.045 / " + str(factor), self.alist.get("labelsize"), self.alist.get("labelsizex")))
+		labelsizey = eval(lib.useVal("0.045 / " + str(factor), self.alist.get("labelsize"), self.alist.get("labelsizey")))
+		labelsizez = eval(lib.useVal("0.045 / " + str(factor), self.alist.get("labelsize"), self.alist.get("labelsizez")))
+
+		for sidx in range(len(self.h)):
+			for cidx in range(len(self.h[0])):
+				self.h[sidx][cidx].SetTitle("")
+				self.h[sidx][cidx].GetXaxis().SetTitle(self.labels[0])
+				self.h[sidx][cidx].GetXaxis().SetLabelSize(labelsizex)
+				self.h[sidx][cidx].GetXaxis().SetTitleSize(labelsizex)
+				self.h[sidx][cidx].GetXaxis().SetNdivisions(505)
+				self.h[sidx][cidx].GetYaxis().SetTitle(self.labels[1])
+				self.h[sidx][cidx].GetYaxis().SetLabelSize(labelsizey)
+				self.h[sidx][cidx].GetYaxis().SetTitleSize(labelsizey)
+				self.h[sidx][cidx].GetYaxis().SetTitleOffset(factor*1.15)
+				self.h[sidx][cidx].GetYaxis().SetNdivisions(505)
+				if len(self.labels) > 2: 
+					self.h[sidx][cidx].GetZaxis().SetTitle(self.labels[2])
+					self.h[sidx][cidx].GetZaxis().SetLabelSize(labelsizez)
+					self.h[sidx][cidx].GetZaxis().SetTitleSize(labelsizez)
+					self.h[sidx][cidx].GetZaxis().SetTitleOffset(factor)
+					self.h[sidx][cidx].GetZaxis().SetNdivisions(505)
 
 
 	## setInitial
 	##---------------------------------------------------------------
 	def setInitial(self):
 
+		self.vb.call("hist", "setInitial", [self], "Setting the initial configuration.")
 		self.i_argstring = self.alist.argstring
-		self.i_ints      = []
+		self.i_ints      = [[1. for cidx in range(len(self.h[0]))] for sidx in range(len(self.h))]
 
-		for sidx in range(len(self.h)):
-			self.i_ints.append([self.h[sidx][cidx].Integral() for cidx in range(len(self.h[0]))])
-
+		if self.alist.get("profile") != "y":
+			for sidx in range(len(self.h)):
+				for cidx in range(len(self.h[0])):
+					self.i_ints[sidx][cidx] = self.h[sidx][cidx].Integral()
+	
 
 	## setLabels
 	##---------------------------------------------------------------
-	def setLabels(self, labels):
+	def setLabels(self):
 
-		self.labels = labels
-		if   self.dim == 1 and len(self.labels[1]) > 4 and self.labels[1][-4:] != "/bin": self.labels[1] += "/bin"
-		##elif self.dim == 2 and len(self.labels[2]) > 4 and self.labels[2][-4:] != "/bin": self.labels[2] += "/bin"
-		## no label for color axis?
-	
+		self.vb.call("hist", "setLabels", [self], "Setting the labels of this instance.")
+		self.labels = []
+
+		## 1d histogram
+		if self.dim >= 1:
+			oname = lib.useVal("var", self.alist.get("obs"), self.alist.get("obsx"))
+			obs1 = self.db.getRow("observables", "name=='" + oname + "'")
+			self.labels.append(obs1[1])
+
+		if self.dim == 1:
+			spacing = lib.equalBinSpacing(self.binargs[0].list)
+			add = "/" + str(spacing) + obs1[2] if spacing > 0 else "/bin"
+			self.labels.append(lib.getObjFullName(obs1[3].strip() + add))
+			return
+
+		## 2d histogram
+		if self.dim >= 2:
+			obs2 = self.db.getRow("observables", "name=='" + self.alist.get("obsy") + "'")			
+			self.labels.append(obs2[1])
+
+		if self.dim == 2:
+			self.labels.append(lib.getObjFullName(obs2[3].strip()))
+			return
+
+		## 3d histogram
+		if self.dim == 3:
+			obs3 = self.db.getRow("observables", "name=='" + self.alist.get("obsz") + "'")			
+			self.labels.append(obs3[1])
+
+
+	## setNormalizedLumi
+	##---------------------------------------------------------------
+	def setNormalizedLumi(self):
+		self.vb.call("hist", "setNormalizedLumi", [self], "Setting the normalized parameter to True in case of normalization to luminosity.")
+
+		norm = lib.useVal("none", self.mypaf.input.cfg.getVar("norm"), self.alist.get("norm"))
+
+		if norm == "lumi":
+			for sidx in range(len(self.h)):
+				for cidx in range(len(self.h[0])):
+					self.normalized[sidx][cidx] = True
+
 
 	## setP
 	##---------------------------------------------------------------
 	def setP(self, pvalue = False):
 	
+		self.vb.call("hist", "setP", [self, pvalue], "Setting the plot mode.")
 		self.p = pvalue
 
 
@@ -754,110 +739,106 @@ class hist:
 	def setParent(self):
 		## creates the parent histogram
 
-		binargs = self.binargs
+		self.vb.call("hist", "setParent", [self], "Setting the parent histogram.")
 		self.parent = None
 	
 		## 1d histogram
-		if   len(binargs) == 1:
-			self.check(1)
-			nxbins, xbins = self.getBinArgs("x")
-			if nxbins == 0: 
-				xbins = array.array('d', binargs[0].list)
-				nxbins = int(binargs[0].len) - 1
-			self.parent = ROOT.TH1F(self.name, "", nxbins, xbins)
+		if   self.dim == 1:
+			self.parent = ROOT.TH1F(self.name, "", int(self.binargs[0].len) - 1, array.array('d', self.binargs[0].list))		
 
-		## 1d histogram
-		elif len(binargs) == 3: 
-			self.check(1)
-			nxbins, xbins = self.getBinArgs("x")
-			if nxbins == 0: 
-				nxbins = int(binargs[0])
-				xbins = lib.bins(nxbins, binargs[1], binargs[2])
-			self.parent = ROOT.TH1F(self.name, "", nxbins, xbins)
-
+		## 1d profile histogram
+		elif self.dim == 2 and self.alist.get("profile") == "y":
+			self.parent = ROOT.TProfile2D(self.name, "", int(self.binargs[0].len) - 1, array.array('d', self.binargs[0].list), \
+			                                             int(self.binargs[1].len) - 1, array.array('d', self.binargs[1].list))
 		## 2d histogram
-		elif len(binargs) == 2:
-			self.check(2)
-			nxbins, xbins = self.getBinArgs("x")
-			nybins, ybins = self.getBinArgs("y")
-			if nxbins == 0: 
-				xbins = array.array('d', binargs[0].list)
-				nxbins = int(binargs[0].len) - 1
-			if nybins == 0: 
-				ybins = array.array('d', binargs[1].list)
-				nybins = int(binargs[1].len) - 1
-			self.parent = ROOT.TH2F(self.name, "", nxbins, xbins, nybins, ybins)
-
-		## 2d histogram
-		elif len(binargs) == 6:
-			self.check(2)
-			nxbins, xbins = self.getBinArgs("x")
-			nybins, ybins = self.getBinArgs("y")
-			if nxbins == 0: 
-				nxbins = int(binargs[0])
-				xbins = lib.bins(nxbins, binargs[1], binargs[2])
-			if nybins == 0: 
-				nybins = int(binargs[3])
-				ybins = lib.bins(nybins, binargs[4], binargs[5])
-			self.parent = ROOT.TH2F(self.name, "", nxbins, xbins, nybins, ybins)
-
+		elif self.dim == 2:
+			self.parent = ROOT.TH2F      (self.name, "", int(self.binargs[0].len) - 1, array.array('d', self.binargs[0].list), \
+			                                             int(self.binargs[1].len) - 1, array.array('d', self.binargs[1].list))
 		## 3d histogram
-		elif len(binargs) == 7:
-			self.check(3)
-			nxbins, xbins = self.getBinArgs("x")
-			nybins, ybins = self.getBinArgs("y")
-			nzbins, zbins = self.getBinArgs("z")
-			if nxbins == 0: 
-				nxbins = int(binargs[0])
-				xbins  = array.array('d', binargs[1].list)
-			if nybins == 0: 
-				nybins = int(binargs[2])
-				ybins  = array.array('d', binargs[3].list)
-			if nzbins == 0: 
-				nzbins = int(binargs[4])
-				zbins  = array.array('d', binargs[5].list)
-			self.parent = ROOT.TH3F(self.name, "", nxbins, xbins, nybins, ybins, nzbins, zbins)
-
-		## 3d histogram
-		elif len(binargs) == 9:
-			self.check(3)
-			nxbins, xbins = self.getBinArgs("x")
-			nybins, ybins = self.getBinArgs("y")
-			nzbins, zbins = self.getBinArgs("z")
-			if nxbins == 0: 
-				nxbins = int(binargs[0])
-				xbins = lib.bins(nxbins, binargs[1], binargs[2])
-			if nybins == 0: 
-				nybins = int(binargs[3])
-				ybins = lib.bins(nybins, binargs[4], binargs[5])
-			if nzbins == 0: 
-				nzbins = int(args[6])
-				zbins = lib.bins(nzbins, binargs[7], binargs[8])
-			self.parent = ROOT.TH3F(self.name, "", nxbins, xbins, nybins, ybins, nzbins, zbins)
-
-		## options are bad
-		else:
-			self.vb.error("trying to initialize a histogram with unknown set of arguments")
+		elif self.dim == 3:
+			self.parent = ROOT.TH3F(self.name, "", int(self.binargs[0].len) - 1, array.array('d', self.binargs[0].list), \
+			                                       int(self.binargs[1].len) - 1, array.array('d', self.binargs[1].list), \
+			                                       int(self.binargs[2].len) - 1, array.array('d', self.binargs[2].list))
 
 
-	### setStyle
-	###---------------------------------------------------------------
-	#def setStyle(self):
 
-	#	name = "custom"
-	#	if self.alist.has("style"): name = self.alist.get("style")
+	## setRange
+	##---------------------------------------------------------------
+	def setRange(self):
 
-	#	hs = hstyle.hstyle(self.db, name, self.alist)		
-	#	self.parent = hs.build(self.parent)
+		## check if
+		## - need min to be set to 0
+		## - if using log scale, then set to 0.001 instead
+		## - etc
 
-	#	for sidx in range(len(self.h)):
-	#		for cidx in range(len(self.h[0])):
-	#			self.h[sidx][cidx] = hs.build(self.h[sidx][cidx])
+		self.vb.call("hist", "setRange", [self], "Setting the histogram ranges.")
+
+		if self.dim == 1: dim = "y"
+		else            : dim = "z"
+
+		for sidx in range(len(self.h)):
+			for cidx in range(len(self.h[0])):
+
+				if self.dim == 1: axis = self.h[sidx][cidx].GetYaxis()
+				else            : axis = self.h[sidx][cidx].GetZaxis()
+
+				hrange = lib.findHistRange(self.h[sidx][cidx], dim, self.hasLogScale(dim))
+				min = float(lib.useVal(str(hrange[0]), self.salist.get("min"), self.alist.get(dim + "min"), self.alist.get("min")))
+				max = float(lib.useVal(str(hrange[1]), self.salist.get("max"), self.alist.get(dim + "max"), self.alist.get("max")))
+
+				axis.SetRangeUser(min, max)
+
+
+	## setStats
+	##---------------------------------------------------------------
+	def setStats(self):
+		## activates or deactivates the stats box for the histogram
+
+		self.vb.call("hist", "setStats", [self], "Applying the 'stats' argument to this instance.")
+
+		stats = lib.useVal("n", self.mypaf.input.cfg.getVar("stats"), self.alist.get("stats"))
+		si    = stats.split(",")
+
+		if si[0] == "n":
+			for sidx in range(len(self.h)):
+				for cidx in range(len(self.h[0])):
+					self.h[sidx][cidx].SetStats(0)
+	
+
+	## setStyle
+	##---------------------------------------------------------------
+	def setStyle(self):
+		self.vb.call("hist", "setStyle", [self], "Applying the source information (styling, colors, ..) to this instance.")
+
+
+		for sidx in range(len(self.h)):
+
+			col = self.sources[sidx].color
+			if self.dim == 2 and self.d.find("text") != -1: 
+				col = "ROOT.kBlack"
+
+			color       = eval (lib.useVal("ROOT.kBlack", col                                , self.salist.get("color"      ), self.alist.get("color"      )))
+			fillstyle   = int  (lib.useVal("1001"       , str(self.sources[sidx].fillstyle)  , self.salist.get("fillstyle"  ), self.alist.get("fillstyle"  )))
+			linestyle   = int  (lib.useVal("1"          , str(self.sources[sidx].linestyle)  , self.salist.get("linestyle"  ), self.alist.get("linestyle"  )))
+			linewidth   = int  (lib.useVal("2"          , str(self.sources[sidx].linewidth)  , self.salist.get("linewidth"  ), self.alist.get("linewidth"  )))
+			markerstyle = int  (lib.useVal("8"          , str(self.sources[sidx].markerstyle), self.salist.get("markerstyle"), self.alist.get("markerstyle")))
+			markersize  = float(lib.useVal("1.8"        , str(self.sources[sidx].markersize) , self.salist.get("markersize" ), self.alist.get("markersize" )))
+
+			for cidx in range(len(self.h[sidx])):
+				self.h[sidx][cidx].SetFillColor(color)
+				self.h[sidx][cidx].SetFillStyle(fillstyle)
+				self.h[sidx][cidx].SetLineColor(color)
+				self.h[sidx][cidx].SetLineStyle(linestyle)
+				self.h[sidx][cidx].SetLineWidth(linewidth)
+				self.h[sidx][cidx].SetMarkerColor(color)
+				self.h[sidx][cidx].SetMarkerStyle(markerstyle)
+				self.h[sidx][cidx].SetMarkerSize(markersize)
 
 
 	## subHist
 	##---------------------------------------------------------------
 	def subHist(self, hist, coeffs = []):
+		self.vb.call("hist", "subHist", [self, hist, coeffs], "Subtracting another hist from this instance.")
 		self.check(hist.dim)
 		for sidx in range(len(self.h)):
 			for cidx in range(len(self.h[0])):

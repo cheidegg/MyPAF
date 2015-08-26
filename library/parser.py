@@ -57,7 +57,7 @@ def accessFile(path, variable, rescale = 1.0):
 		f = ROOT.TFile(path)
 		h = copy.deepcopy(f.Get(variable))
 		f.Close()
-		h.Scale(rescale)
+		#h.Scale(rescale)
 		return h
 	return None
 
@@ -71,7 +71,7 @@ def accessHist(path, canvas, variable, rescale = 1.0):
 		c = f.Get(canvas)
 		h = copy.deepcopy(c.GetPrimitive(variable))
 		f.Close()
-		h.Scale(rescale)
+		#h.Scale(rescale)
 		return h
 	return None
 

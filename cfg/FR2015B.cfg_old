@@ -1,0 +1,105 @@
+&& head
+energy        := 13
+luminosity    := 4.
+norm          := lumi
+inputdir      := FR2015B/
+inputtree     := tree
+source        := sample
+#mode          := test
+#outputdir     := ./
+outputtree    := tree
+prodtitle     := FRplots
+description   := first FR plots on data and spring15 QCD samples, configuration as in RA5 sync
+zip           := y
+syncwww       := y
+#verbosity     := 0
+
+
+&& input
+file := FR          := FakeRatio2015B_qcd.root
+#file := FR          := FakeRatio2015B.root
+#file := FRisoM      := FakeRatio2015B_sync_cut_mixisoM_none_iso_all_all.root
+#file := FRisoT      := FakeRatio2015B_sync_cut_mixisoT_none_iso_all_all.root
+#file := FRisoidM    := FakeRatio2015B_sync_cut_mixisoM_none_isoid_all_all.root
+#file := FRisoidT    := FakeRatio2015B_sync_cut_mixisoT_none_isoid_all_all.root
+#file := FRISiso     := FRinSitu_sync_all_iso_all_cut_mixiso_none_all_10.root
+#file := FRISisoid   := FRinSitu_sync_all_isoid_all_cut_mixiso_none_all_10.root
+#file := FRISisofo4  := FRinSitu_sync_all_isofo4_all_cut_mixiso_none_all_10.root
+#file := FRISisoc    := FRinSitu_sync_all_iso_all_cut_mixiso_none_all_c10.root
+#file := FRISisoidc  := FRinSitu_sync_all_isoid_all_cut_mixiso_none_all_c10.root
+#file := FRISisofo4c := FRinSitu_sync_all_isofo4_all_cut_mixiso_none_all_c10.root
+
+
+
+&& output
+
+## Fake Ratio electron denominators
+plot := DenElPtCorrQCD  := FILE[FR]::MR_DenElMapPtCorr/QCD_Pt20to30_EMEnriched::qcdem20sp15 FILE[FR]::MR_DenElMapPtCorr/QCD_Pt30to50_EMEnriched::qcdem30sp15 FILE[FR]::MR_DenElMapPtCorr/QCD_Pt50to80_EMEnriched::qcdem50sp15 FILE[FR]::MR_DenElMapPtCorr/QCD_Pt80to120_EMEnriched::qcdem80sp15 FILE[FR]::MR_DenElMapPtCorr/QCD_Pt120to170_EMEnriched::qcdem120sp15 FILE[FR]::MR_DenElMapPtCorr/QCD_Pt170to300_EMEnriched::qcdem170sp15 FILE[FR]::MR_DenElMapPtCorr/QCD_Pt300toInf_EMEnriched::qcdem300sp15 FILE[FR]::MR_DenElMapPtCorr/QCD_Pt_15to20_bcToE::qcdbc15sp15 FILE[FR]::MR_DenElMapPtCorr/QCD_Pt_20to30_bcToE::qcdbc20sp15 FILE[FR]::MR_DenElMapPtCorr/QCD_Pt_30to80_bcToE::qcdbc30sp15 FILE[FR]::MR_DenElMapPtCorr/QCD_Pt_80to170_bcToE::qcdbc80sp15 FILE[FR]::MR_DenElMapPtCorr/QCD_Pt_170to250_bcToE::qcdbc170sp15 FILE[FR]::MR_DenElMapPtCorr/QCD_Pt_250toInf_bcToE::qcdbc250sp15     := obsx=LepPtMIso2 obsy=ElAbsEta source=qcdel markersize=1.2 draw2mode=text_e min=0 max=0.7
+
+plot := DenElPtCorrData := FILE[FR]::MR_DenElMapPtCorr/DoubleEG_251244-251562::deg15b := obsx=LepPtMIso2 obsy=ElAbsEta source=data15b markersize=1.2 draw2mode=text_e min=0 max=0.7
+
+
+## Fake Ratio electron numerators
+plot := NumElPtCorrQCD := FILE[FR]::MR_NumElMapPtCorr/QCD_Pt20to30_EMEnriched::qcdem20sp15 FILE[FR]::MR_NumElMapPtCorr/QCD_Pt30to50_EMEnriched::qcdem30sp15 FILE[FR]::MR_NumElMapPtCorr/QCD_Pt50to80_EMEnriched::qcdem50sp15 FILE[FR]::MR_NumElMapPtCorr/QCD_Pt80to120_EMEnriched::qcdem80sp15 FILE[FR]::MR_NumElMapPtCorr/QCD_Pt120to170_EMEnriched::qcdem120sp15 FILE[FR]::MR_NumElMapPtCorr/QCD_Pt170to300_EMEnriched::qcdem170sp15 FILE[FR]::MR_NumElMapPtCorr/QCD_Pt300toInf_EMEnriched::qcdem300sp15 FILE[FR]::MR_NumElMapPtCorr/QCD_Pt_15to20_bcToE::qcdbc15sp15 FILE[FR]::MR_NumElMapPtCorr/QCD_Pt_20to30_bcToE::qcdbc20sp15 FILE[FR]::MR_NumElMapPtCorr/QCD_Pt_30to80_bcToE::qcdbc30sp15 FILE[FR]::MR_NumElMapPtCorr/QCD_Pt_80to170_bcToE::qcdbc80sp15 FILE[FR]::MR_NumElMapPtCorr/QCD_Pt_170to250_bcToE::qcdbc170sp15 FILE[FR]::MR_NumElMapPtCorr/QCD_Pt_250toInf_bcToE::qcdbc250sp15     := obsx=LepPtMIso2 obsy=ElAbsEta source=qcdel markersize=1.2 draw2mode=text_e min=0 max=0.7
+
+plot := NumElPtCorrData := FILE[FR]::MR_NumElMapPtCorr/DoubleEG_251244-251562::deg15b := obsx=LepPtMIso2 obsy=ElAbsEta source=data15b markersize=1.2 draw2mode=text_e min=0 max=0.7
+
+
+## Fake Ratio muon denominators
+plot := DenMuPtQCD     := FILE[FR]::MR_DenMuMapPt/QCD_Mu15_50ns::qcdm15sp15 FILE[FR]::MR_DenMuMapPt/QCD_Pt15to20_Mu5_50ns::qcdm5p15sp15 FILE[FR]::MR_DenMuMapPt/QCD_Pt20to30_Mu5_50ns::qcdm5p20sp15 FILE[FR]::MR_DenMuMapPt/QCD_Pt30to50_Mu5_50ns::qcdm5p30sp15 FILE[FR]::MR_DenMuMapPt/QCD_Pt50to80_Mu5_50ns::qcdm5p50sp15 FILE[FR]::MR_DenMuMapPt/QCD_Pt80to120_Mu5_50ns::qcdm5p80sp15 FILE[FR]::MR_DenMuMapPt/QCD_Pt120to170_Mu5_50ns::qcdm5p120sp15 FILE[FR]::MR_DenMuMapPt/QCD_Pt170to300_Mu5_50ns::qcdm5p170sp15 FILE[FR]::MR_DenMuMapPt/QCD_Pt300to470_Mu5_50ns::qcdm5p300sp15 FILE[FR]::MR_DenMuMapPt/QCD_Pt470to600_Mu5_50ns::qcdm5p470sp15 FILE[FR]::MR_DenMuMapPt/QCD_Pt600to800_Mu5_50ns::qcdm5p600sp15 FILE[FR]::MR_DenMuMapPt/QCD_Pt800to1000_Mu5_50ns::qcdm5p800sp15 FILE[FR]::MR_DenMuMapPt/QCD_Pt1000toInf_Mu5_50ns::qcdm5p1000sp15                                                       := obsx=LepPt obsy=MuAbsEta source=qcdmu markersize=1.2 draw2mode=text_e min=0 max=0.7
+
+plot := DenMuPtData    := FILE[FR]::MR_DenMuMapPt/DoubleMuon_251244-251643::dm15b         := obsx=LepPt obsy=MuAbsEta source=data15b markersize=1.2 draw2mode=text_e min=0 max=0.7
+
+plot := DenMuPtCorrQCD := FILE[FR]::MR_DenMuMapPtCorr/QCD_Mu15_50ns::qcdm15sp15 FILE[FR]::MR_DenMuMapPtCorr/QCD_Pt15to20_Mu5_50ns::qcdm5p15sp15 FILE[FR]::MR_DenMuMapPtCorr/QCD_Pt20to30_Mu5_50ns::qcdm5p20sp15 FILE[FR]::MR_DenMuMapPtCorr/QCD_Pt30to50_Mu5_50ns::qcdm5p30sp15 FILE[FR]::MR_DenMuMapPtCorr/QCD_Pt50to80_Mu5_50ns::qcdm5p50sp15 FILE[FR]::MR_DenMuMapPtCorr/QCD_Pt80to120_Mu5_50ns::qcdm5p80sp15 FILE[FR]::MR_DenMuMapPtCorr/QCD_Pt120to170_Mu5_50ns::qcdm5p120sp15 FILE[FR]::MR_DenMuMapPtCorr/QCD_Pt170to300_Mu5_50ns::qcdm5p170sp15 FILE[FR]::MR_DenMuMapPtCorr/QCD_Pt300to470_Mu5_50ns::qcdm5p300sp15 FILE[FR]::MR_DenMuMapPtCorr/QCD_Pt470to600_Mu5_50ns::qcdm5p470sp15 FILE[FR]::MR_DenMuMapPtCorr/QCD_Pt600to800_Mu5_50ns::qcdm5p600sp15 FILE[FR]::MR_DenMuMapPtCorr/QCD_Pt800to1000_Mu5_50ns::qcdm5p800sp15 FILE[FR]::MR_DenMuMapPtCorr/QCD_Pt1000toInf_Mu5_50ns::qcdm5p1000sp15       := obsx=LepPtMIso2 obsy=MuAbsEta source=qcdmu markersize=1.2 draw2mode=text_e min=0 max=0.7
+
+plot := DenMuPtCorrData := FILE[FR]::MR_DenMuMapPtCorr/DoubleMuon_251244-251643::dm15b := obsx=LepPtMIso2 obsy=MuAbsEta source=data15b markersize=1.2 draw2mode=text_e min=0 max=0.7
+
+
+## Fake Ratio muon numerators
+plot := NumMuPtQCD      := FILE[FR]::MR_NumMuMapPt/QCD_Mu15_50ns::qcdm15sp15 FILE[FR]::MR_NumMuMapPt/QCD_Pt15to20_Mu5_50ns::qcdm5p15sp15 FILE[FR]::MR_NumMuMapPt/QCD_Pt20to30_Mu5_50ns::qcdm5p20sp15 FILE[FR]::MR_NumMuMapPt/QCD_Pt30to50_Mu5_50ns::qcdm5p30sp15 FILE[FR]::MR_NumMuMapPt/QCD_Pt50to80_Mu5_50ns::qcdm5p50sp15 FILE[FR]::MR_NumMuMapPt/QCD_Pt80to120_Mu5_50ns::qcdm5p80sp15 FILE[FR]::MR_NumMuMapPt/QCD_Pt120to170_Mu5_50ns::qcdm5p120sp15 FILE[FR]::MR_NumMuMapPt/QCD_Pt170to300_Mu5_50ns::qcdm5p170sp15 FILE[FR]::MR_NumMuMapPt/QCD_Pt300to470_Mu5_50ns::qcdm5p300sp15 FILE[FR]::MR_NumMuMapPt/QCD_Pt470to600_Mu5_50ns::qcdm5p470sp15 FILE[FR]::MR_NumMuMapPt/QCD_Pt600to800_Mu5_50ns::qcdm5p600sp15 FILE[FR]::MR_NumMuMapPt/QCD_Pt800to1000_Mu5_50ns::qcdm5p800sp15 FILE[FR]::MR_NumMuMapPt/QCD_Pt1000toInf_Mu5_50ns::qcdm5p1000sp15 := obsx=LepPt obsy=MuAbsEta source=qcdmu markersize=1.2 draw2mode=text_e min=0 max=0.7
+
+plot := NumMuPtData     := FILE[FR]::MR_NumMuMapPt/DoubleMuon_251244-251643::dm15b := obsx=LepPt obsy=MuAbsEta source=data15b markersize=1.2 draw2mode=text_e min=0 max=0.7
+
+plot := NumMuPtCorrQCD  := FILE[FR]::MR_NumMuMapPtCorr/QCD_Mu15_50ns::qcdm15sp15 FILE[FR]::MR_NumMuMapPtCorr/QCD_Pt15to20_Mu5_50ns::qcdm5p15sp15 FILE[FR]::MR_NumMuMapPtCorr/QCD_Pt20to30_Mu5_50ns::qcdm5p20sp15 FILE[FR]::MR_NumMuMapPtCorr/QCD_Pt30to50_Mu5_50ns::qcdm5p30sp15 FILE[FR]::MR_NumMuMapPtCorr/QCD_Pt50to80_Mu5_50ns::qcdm5p50sp15 FILE[FR]::MR_NumMuMapPtCorr/QCD_Pt80to120_Mu5_50ns::qcdm5p80sp15 FILE[FR]::MR_NumMuMapPtCorr/QCD_Pt120to170_Mu5_50ns::qcdm5p120sp15 FILE[FR]::MR_NumMuMapPtCorr/QCD_Pt170to300_Mu5_50ns::qcdm5p170sp15 FILE[FR]::MR_NumMuMapPtCorr/QCD_Pt300to470_Mu5_50ns::qcdm5p300sp15 FILE[FR]::MR_NumMuMapPtCorr/QCD_Pt470to600_Mu5_50ns::qcdm5p470sp15 FILE[FR]::MR_NumMuMapPtCorr/QCD_Pt600to800_Mu5_50ns::qcdm5p600sp15 FILE[FR]::MR_NumMuMapPtCorr/QCD_Pt800to1000_Mu5_50ns::qcdm5p800sp15 FILE[FR]::MR_NumMuMapPtCorr/QCD_Pt1000toInf_Mu5_50ns::qcdm5p1000sp15 := obsx=LepPtMIso2 obsy=MuAbsEta source=qcdmu markersize=1.2 draw2mode=text_e min=0 max=0.7
+
+plot := NumMuPtCorrData := FILE[FR]::MR_NumMuMapPtCorr/DoubleMuon_251244-251643::dm15b := obsx=LepPtMIso2 obsy=MuAbsEta source=data15b markersize=1.2 draw2mode=text_e min=0 max=0.7
+
+
+### Fake Ratio IN SITU electron denominators
+#plot := FRISisofo4LElPtMIso2 := FILE[FRISisofo4c]::MR_LElSyncMapPtMIso2/TTJets::ttph14 := obsx=LepPtMIso2 obsy=LepAbsEta source=tt markersize=1.2 draw2mode=text_e
+#
+#
+### Fake Ratio IN SITU electron numerators
+#plot := FRISisofo4TElPtMIso2 := FILE[FRISisofo4c]::MR_TElSyncMapPtMIso2/TTJets::ttph14 := obsx=LepPtMIso2 obsy=ElAbsEta source=tt markersize=1.2 draw2mode=text_e
+#
+#
+### Fake Ratio IN SITU muon denominators
+#plot := FRISisofo4LMuPtMIso2 := FILE[FRISisofo4c]::MR_LMuSyncMapPtMIso2/TTJets::ttph14 := obsx=LepPtMIso2 obsy=MuAbsEta source=tt markersize=1.2 draw2mode=text_e
+#
+#
+### Fake Ratio IN SITU muon numerators
+#plot := FRISisofo4TMuPtMIso2 := FILE[FRISisofo4c]::MR_TMuSyncMapPtMIso2/TTJets::ttph14 := obsx=LepPtMIso2 obsy=MuAbsEta source=tt markersize=1.2 draw2mode=text_e
+
+
+&& selection
+
+&& schemes
+
+## Fake Ratio electron
+div := FRElPtCorrQCD  := NumElPtCorrQCD  DenElPtCorrQCD  := min=0 max=0.7 draw2mode=colz_text_e
+#div := FRElPtCorrData := NumElPtCorrData DenElPtCorrData := min=0 max=0.7 draw2mode=colz_text_e
+
+## Fake Ratio muon
+div := FRMuPtQCD      := NumMuPtQCD      DenMuPtQCD      := min=0 max=0.7 draw2mode=colz_text_e
+#div := FRMuPtData     := NumMuPtData     DenMuPtData     := min=0 max=0.7 draw2mode=colz_text_e
+div := FRMuPtCorrQCD  := NumMuPtCorrQCD  DenMuPtCorrQCD  := min=0 max=0.7 draw2mode=colz_text_e
+#div := FRMuPtCorrData := NumMuPtCorrData DenMuPtCorrData := min=0 max=0.7 draw2mode=colz_text_e
+
+### Fake Ratio IN SITU electron
+#div := FRISisofo4RElPtMIso2 := FRISisofo4TElPtMIso2 FRISisofo4LElPtMIso2 := min=0 max=0.7 draw2mode=colz_text_e
+#
+### Fake Ratio IN SITU muon
+#div := FRISisofo4RMuPtMIso2 := FRISisofo4TMuPtMIso2 FRISisofo4LMuPtMIso2 := min=0 max=0.7 draw2mode=colz_text_e
+
+
+

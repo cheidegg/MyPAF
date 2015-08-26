@@ -9,8 +9,9 @@
 #################################################################
 #################################################################
 
-import array, copy, datetime, os, ROOT, subprocess
+import array, copy, datetime, os, ROOT, PIL, subprocess
 import clist
+from PIL import Image
 
 
 ## addToVectorIfMissing
@@ -59,7 +60,7 @@ def attr(vector, attribute):
 def bash(cmd):
 
 	pipe = subprocess.Popen(cmd, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-	return pipe.stdout.read()
+	return pipe.stdout.read().rstrip("\n").strip()
 
 
 ## bins
@@ -79,15 +80,63 @@ def bins(nxbin, xmin, xmax):
 	return array.array('d', list)
 
 
+## buildSelSteps
+##---------------------------------------------------------------
+def buildSelSteps(selection, ind = False):
+	## arg1 && arg2 && (arg3 || (arg4 && arg5)) -> arg1, arg2, (...)
+
+	args = []
+
+	cache   = ""
+	last    = ""
+	bracket = 0
+	for i in range(len(selection)):
+		c = selection[i:i+1]
+		if c == "(":
+			bracket += 1
+		if c == ")":
+			bracket -= 1
+		if c != "&" or bracket > 0:
+			cache += c
+		if bracket == 0 and ((last == "&" and c == "&") or i == len(selection)-1):
+			args.append(cache)
+			cache = ""	
+		last = c
+
+	result = [""]
+	args.append(selection)
+
+	if ind:
+		result.extend(args)
+	else: 
+		result.extend([" && ".join(args[0:i]) for i in range(1,len(args)+1)])
+
+	return result
+
+
 ## cleanDir
 ##---------------------------------------------------------------
 def cleanDir(path, clcmd = "rm -r"):
 	## cleans a directory by removing everything that is inside
 
-	path = path.rstrip("/")
+	if not os.path.isdir(path): return
 
-	if os.path.isdir(path) and os.listdir(path) != []:
-		os.system(clcmd + " " + path + "/*")
+	dirs, files = listDir(path, [], [])
+
+	for d in dirs : rmDir (d)
+	for f in files: rmFile(f)
+
+	#path = path.rstrip("/")
+
+	#if os.path.isdir(path) and os.listdir(path) != []:
+	#	os.system(clcmd + " " + path + "/*")
+
+
+## cmd
+##---------------------------------------------------------------
+def cmd(line):
+	#print line
+	os.system(line)
 
 
 ## column
@@ -123,12 +172,65 @@ def combine(objlist1, objlist2, selection = ""):
 	return pairs
 
 
+## cpDir
+##---------------------------------------------------------------
+def cpDir(dir, location, destination):
+
+	dir         = dir        .rstrip("/")
+	location    = location   .rstrip("/")
+	destination = destination.rstrip("/")
+
+	mkDir(destination + "/" + dir)
+	dirs, files = listDir(location + "/" + dir, [], [])
+
+	for d in dirs:
+		mkDir(findPath(d, location + "/" + dir, destination + "/" + dir))
+
+	for f in files:
+		cpFile(f, findPath(f, location + "/" + dir, destination + "/" + dir))
+
+
 ## cpFile
 ##---------------------------------------------------------------
-def copyFile(location, destination, cpcmd = "cp"):
+def cpFile(path, destination):
 
-	if os.path.isfile(location):
-		os.system(cpcmd + " " + location + " " + destination)
+	## SE
+	if path.find("psi.ch") > -1 or destination.find("psi.ch") > -1:
+		if path       .find("psi.ch") > -1: path        = "srm://t3se01.psi.ch:8443/srm/managerv2?SFN=" + path
+		if destination.find("psi.ch") > -1: destination = "srm://t3se01.psi.ch:8443/srm/managerv2?SFN=" + destination
+		cmd("lcg-cp -b -D srmv2 " + path + " " + destination)
+	
+	## EOS
+	#elif path.find("eos"):
+	#   if path       .find("eos") > -1: path = "root://eoscms.cern.ch/" + path
+	#   cmd("xrdcp -f -d 1 root://eoscms.cern.ch/
+	#   cmd("")
+	
+	## normal
+	else:
+		cmd("cp -rf " + path + " " + destination)
+
+
+## cpFileAllSubDirs
+##---------------------------------------------------------------
+def cpFileAllSubDirs(path, destination, subdirs = []):
+
+	destination = destination.rstrip("/")
+
+	## all sub dirs
+	if subdirs == []:
+		dirs, files = listDir(destination, [], [])
+
+	## given sub dirs
+	else:
+		dirs = []
+		for d in subdirs:
+			if os.path.isdir(destination + "/" + d):
+				dirs.append(destination + "/" + d)
+			
+	## copying the file
+	for d in dirs:
+		cpFile(path, d + "/" + path[path.rfind("/")+1:])
 
 
 ## copyHStyle
@@ -138,10 +240,27 @@ def copyHStyle(hdest, hloc):
 	return hdest
 
 
+## div
+##---------------------------------------------------------------
+def div(numerator, denominator):
+	if denominator == 0: return 0.
+	return float(numerator) / float(denominator)
+
+
 ## dump
 ##---------------------------------------------------------------
 def dump(name, value):
 	print name + "=" + str(value)
+
+
+## equalBinSpacing
+##---------------------------------------------------------------
+def equalBinSpacing(binlist):
+	
+	idx = firstElm(binlist, 0)
+	if all([elm % binlist[idx] == 0 for elm in binlist]):
+		 return binlist[1] - binlist[0]
+	return 0
 
 
 ## findDatasetCfg
@@ -208,6 +327,73 @@ def findElmAttrAll(list, attribute, value):
 	return result
 
 
+## resetHistRange
+##---------------------------------------------------------------
+def resetHistRange(hist):
+
+	#return hist
+	## only implemented for 1D
+
+	if hist.GetDimension() > 1: return hist
+
+
+	min = hist.GetMaximum()
+	max = hist.GetMinimum()
+	for bin in range(1,hist.GetNbinsX()+1):
+		bc = hist.GetBinContent[bin]
+		if bc < min: min = bc
+		if bc > max: max = bc
+
+	hist.GetYaxis().SetRangeUser(min,max)
+
+	return hist
+	
+
+## findHistRange
+##---------------------------------------------------------------
+def findHistRange(hist, dim, logscale = False):
+
+	min = hist.GetMinimum()
+	max = hist.GetMaximum()
+
+	if dim == "x":
+		min = hist.GetXaxis().GetXmin()
+		max = hist.GetXaxis().GetXmax()
+	elif dim == "y" and hist.GetDimension() >= 2:
+		min = hist.GetYaxis().GetXmin()
+		max = hist.GetYaxis().GetXmax()
+	elif dim == "z" and hist.GetDimension() == 3:
+		min = hist.GetZaxis().GetXmin()
+		max = hist.GetZaxis().GetXmax()
+
+	min *= 0.75
+	max *= 1.5
+
+	if min <= 0 and logscale:
+		min = 0.001
+
+	return [min, max]
+
+
+## findPath
+##---------------------------------------------------------------
+def findPath(path, location, destination):
+
+	if path.find(location) > -1:
+		return path.replace(location.rstrip("/"), destination.rstrip("/"))
+	if path.find(destination) > -1:
+		return path.replace(destination.rstrip("/"), location.rstrip("/"))
+	
+	return path
+
+
+## firstElm
+##---------------------------------------------------------------
+def firstElm(list, elm):
+
+	return next((i for i, x in enumerate(list) if x != elm), None)
+
+
 ## formatStr
 ##---------------------------------------------------------------
 def formatStr(string, length = 0, append = 0):
@@ -231,6 +417,21 @@ def formatStr(string, length = 0, append = 0):
 def getAllFiles(path):
 
 	return [path + f for f in os.listdir(path) if os.path.isfile(path + f)]
+
+
+## getBinArgs
+##---------------------------------------------------------------
+def getBinArgs(alist, dim = "x"):
+
+	## alist has array of bins
+	if alist.has(dim + "bins"):
+		return eval("[" + alist.get(dim + "bins") + "]")
+	
+	## alist has num, min and max
+	if alist.has("n" + dim + "bins") and alist.has(dim + "min") and alist.has(dim + "max"):
+		return bins(int(alist.get("n" + dim + "bins")), float(alist.get(dim + "min")), float(alist.get(dim + "max")))
+
+	return []
 
 
 ## getColWidths
@@ -294,18 +495,26 @@ def getListOfAttrs(tevt, tobjs, attr):
 
 	## object attribute
 	if attr.find(".") != -1:
-		oidxs = lib.findElmAttrAll(tobjs, "name", a.split(".")[0])
+		oidxs = findElmAttrAll(tobjs, "name", a.split(".")[0])
 		result.append([getattr(tobjs[idx], a.split(".")[1]) for idx in oidxs])
 
 	## object
-	elif lib.findElmAttr(tobjs, "name", a) > -1:
-		result.append([tobjs[idx] for idx in lib.findElmAttr(tobjs, "name", attr)])
+	elif findElmAttr(tobjs, "name", a) > -1:
+		result.append([tobjs[idx] for idx in findElmAttr(tobjs, "name", attr)])
 
 	## event attribute
 	else:
 		result.append(getattr(tevt, attr))
 
 	return result
+
+
+## getHistDim
+##---------------------------------------------------------------
+def getHistDim(histdef):
+
+	newdef = histdef.replace("::", "_")
+	return newdef.count(":") + 1
 
 
 ## getHistMinMax
@@ -335,6 +544,16 @@ def getObj(objlist, objname):
 	return objlist[idx]
 
 
+## getObjFullName
+##---------------------------------------------------------------
+def getObjFullName(objname):
+
+	if   objname == "jet": return "jets"
+	elif objname == "lep": return "leptons"
+	elif objname == "met": return "met"
+	else                 : return "events"
+
+
 ## getPadSize
 ##---------------------------------------------------------------
 def getPadSize(pad):
@@ -357,15 +576,74 @@ def getTimeStamp():
 
 	today   = datetime.datetime.now()
 	return str(today.year) + "-" + "%02d" % today.month + "-" + "%02d" % today.day + "-" + "%02d" % today.hour + "-" + "%02d" % today.minute + "-" + "%02d" % today.second
+
+
+## groupFileExtensions
+##---------------------------------------------------------------
+def groupFileExtensions(path):
+
+	path = path.rstrip("/") + "/"
+	files = [f for f in os.listdir(path) if not os.path.isdir(path + f)]
+	fends = [f.split(".")[-1] for f in files]
+
+	for i, end in enumerate(fends):
+		mkDir(path + end)
+		mvFile(path + files[i], path + end + "/" + files[i])
 	
 
-## makeDir
+## isInt
 ##---------------------------------------------------------------
-def makeDir(path, mkcmd = "mkdir"):
+def isInt(string):
+	## checks if a string represents an integer
+
+	try: 
+		int(string)
+		return True
+	except ValueError:
+		return False	
+
+
+## listDir
+##---------------------------------------------------------------
+def listDir(path, dirs = [], files = [], dont = []):
+
+	path = path.rstrip("/")
+	c = os.listdir(path)
+	
+	for i in c:
+	
+		if i in dont: continue
+		e = path + "/" + i
+		
+		if os.path.isdir(e):
+			dirs.append(e)
+			listDir(e, dirs, files, dont)
+		else:
+			files.append(e)
+	
+	return dirs, files
+
+
+## mkDir
+##---------------------------------------------------------------
+def mkDir(path):
 	## creates a directory if it does not yet exist
 
-	if not os.path.isdir(path):
-		os.system(mkcmd + " " + path)
+	## dir exists
+	if os.path.isdir(path): return
+	
+	
+	## SE
+	if path.find("psi.ch") > -1:
+		cmd("gfal-mkdir srm://t3se01.psi.ch/" + path)
+	
+	## EOS
+	#elif path.find("eos"):
+	#   cmd("")
+	
+	## normal
+	else:
+		cmd("mkdir " + path)
 
 
 ## makeTDir
@@ -379,6 +657,31 @@ def makeTDir(tfile, tdir):
 	tfile.cd(tdir)
 
 	return tfile
+
+
+## mvFile
+##---------------------------------------------------------------
+def mvFile(path, destination):
+	cpFile(path, destination)
+	rmFile(path)
+
+
+## normalizeHistInt
+##---------------------------------------------------------------
+def normalizeHistInt(hist, integral = 1.0):
+
+	if hist.Integral() == 0: return hist
+	hist.Scale(integral / hist.Integral())
+	return hist
+ 
+
+## normalizeHistLumi
+##---------------------------------------------------------------
+def normalizeHistLumi(hist, lumi, xsec, nevt):
+
+	if nevts == 0: return hist
+	hist.Scale(lumi * xsec / nevts)
+	return hist
 
 
 ## pairs
@@ -484,12 +787,46 @@ def resetHStyle(h):
 	return h
 
 
+## rmDir
+##---------------------------------------------------------------
+def rmDir(path):
+
+	## dir does not exist
+	if not os.path.isdir(path): return
+	
+	
+	## SE
+	if path.find("psi.ch") > -1:
+		cmd("srmrmdir srm://t3se01.psi.ch:8443/srm/managerv2?SFN=" + path)
+	
+	## EOS
+	#elif path.find("eos"):
+	#   cmd("")
+	
+	## normal
+	else:
+		cmd("rm -rf " + path)
+
+
 ## rmFile
 ##---------------------------------------------------------------
-def rmFile(path, rmcmd = "rm"):
-
-	if os.path.isfile(path):
-		os.system(rmcmd + " " + path)
+def rmFile(path):
+	
+	## file does not exist
+	if not os.path.exists(path): return
+	
+	
+	## SE
+	if path.find("psi.ch") > -1:
+		cmd("srmrm srm://t3se01.psi.ch:8443/srm/managerv2?SFN=" + path)
+	
+	## EOS
+	#elif path.find("eos"):
+	#   cmd("")
+	
+	## normal
+	else:
+		cmd("rm -f " + path)
 
 
 ## row
@@ -516,13 +853,6 @@ def saveHist(file, h, name):
 	file.Write()
 
 	return h
-
-
-## scaleLumi
-##---------------------------------------------------------------
-def scaleLumi(lumi, xsec, nevts):
-
-	return lumi * xsec / nevts
 
 
 ## setDType
@@ -606,6 +936,15 @@ def uniformBins(bins = []):
 		return False
 
 	return True
+	
+
+## useArr
+##---------------------------------------------------------------
+def useArr(default, list1, list2 = [""], list3 = [""]):
+	if   list3 != [""] and list3 != []: return list3
+	elif list2 != [""] and list2 != []: return list2
+	elif list1 != [""] and list1 != []: return list1
+	return default
 
 
 ## usePath
@@ -628,19 +967,19 @@ def usePath(mypafpath, headpath, filepath, argpath = ""):
 
 	## relative filepath and absolute headpath -> relative to headpath
 	if headpath[0] == "/":
-		if headpath.find("psi.ch") != -1: headpath = "dcap://t3se01.psi.ch:22125/" + headpath
-		if headpath.find("eos/")   != -1: headpath = "root://cms-xrd-global.cern.ch/" + headpath
+		if headpath.find("psi.ch")  != -1: headpath = "dcap://t3se01.psi.ch:22125/" + headpath
+		if headpath.find("eos/cms") != -1: headpath = "root://cms-xrd-global.cern.ch/" + headpath
 		return headpath.rstrip("/") + "/" + filepath
 
 	## relative filepath and relative headpath -> all relative to mypaf input path
 	return mypafpath + headpath.rstrip("/") + "/" + filepath
-	
 
 
 ## useVal
 ##---------------------------------------------------------------
-def useVal(default, value1, value2 = ""):
-	if   value2 != "": return value2
+def useVal(default, value1, value2 = "", value3 = ""):
+	if   value3 != "": return value3
+	elif value2 != "": return value2
 	elif value1 != "": return value1
 	return default
 
@@ -651,5 +990,13 @@ def writeFile(path, text):
 	f = open(path, "w")
 	f.write(text)
 	f.close()
+
+
+## writeMetaData
+##---------------------------------------------------------------
+def writeMetaData(path, metadata):
+	
+	im = Image.open(path)
+	im.save(path, "PNG", pnginfo = metadata)
 
 

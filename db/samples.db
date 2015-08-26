@@ -1,52 +1,183 @@
-name         := legendname               := dataset := bggroup := xsec                 := xsecref           := nevents  := ngenevts := datasetname
+name           := legendname                 := dataset := bggroup := xsec                 := xsecref           := nevents  := ngenevts := datasetname
 ##----------------------------------------------------------------------------------------------------------------------------------
-dm15a        := data (double #mu 2015A)  := data    := data    := 0.                   := data              := 1        := 1        := 
+bcsv15ar       := data (BTagCSV 2015A)       := data    := data    := 0.                   := data              := 1        := 1        := /BTagCSV/Run2015A-PromptReco-v1/RECO
+bcsv15br       := data (BTagCSV 2015B)       := data    := data    := 0.                   := data              := 1        := 1        := /BTagCSV/Run2015B-PromptReco-v1/RECO
+bcsv15cr       := data (BTagCSV 2015C)       := data    := data    := 0.                   := data              := 1        := 1        := /BTagCSV/Run2015C-PromptReco-v1/RECO
+bcsv15dr       := data (BTagCSV 2015D)       := data    := data    := 0.                   := data              := 1        := 1        := /BTagCSV/Run2015D-PromptReco-v1/RECO
+bm15ar         := data (BTagMu 2015A)        := data    := data    := 0.                   := data              := 1        := 1        := /BTagMu/Run2015A-PromptReco-v1/RECO
+bm15br         := data (BTagMu 2015B)        := data    := data    := 0.                   := data              := 1        := 1        := /BTagMu/Run2015B-PromptReco-v1/RECO
+bm15cr         := data (BTagMu 2015C)        := data    := data    := 0.                   := data              := 1        := 1        := /BTagMu/Run2015C-PromptReco-v1/RECO
+bm15dr         := data (BTagMu 2015D)        := data    := data    := 0.                   := data              := 1        := 1        := /BTagMu/Run2015D-PromptReco-v1/RECO
+c15ar          := data (Charmonium 2015A)    := data    := data    := 0.                   := data              := 1        := 1        := /Charmonium/Run2015A-PromptReco-v1/RECO
+c15br          := data (Charmonium 2015B)    := data    := data    := 0.                   := data              := 1        := 1        := /Charmonium/Run2015B-PromptReco-v1/RECO
+c15cr          := data (Charmonium 2015C)    := data    := data    := 0.                   := data              := 1        := 1        := /Charmonium/Run2015C-PromptReco-v1/RECO
+c15dr          := data (Charmonium 2015D)    := data    := data    := 0.                   := data              := 1        := 1        := /Charmonium/Run2015D-PromptReco-v1/RECO
+deg15ar        := data (DoubleEG 2015A)      := data    := data    := 0.                   := data              := 1        := 1        := /DoubleEG/Run2015A-PromptReco-v1/RECO
+deg15b         := data (DoubleEG 2015B)      := data    := data    := 0.                   := data              := 1        := 1        := /DoubleEG/Run2015B-PromptReco-v1/MINIAOD
+deg15br        := data (DoubleEG 2015B)      := data    := data    := 0.                   := data              := 1        := 1        := /DoubleEG/Run2015B-PromptReco-v1/RECO
+deg15cr        := data (DoubleEG 2015C)      := data    := data    := 0.                   := data              := 1        := 1        := /DoubleEG/Run2015C-PromptReco-v1/RECO
+deg15dr        := data (DoubleEG 2015D)      := data    := data    := 0.                   := data              := 1        := 1        := /DoubleEG/Run2015D-PromptReco-v1/RECO
+dm15ar         := data (DoubleMu 2015A)      := data    := data    := 0.                   := data              := 1        := 1        := /DoubleMuon/Run2015A-PromptReco-v1/RECO
+dm15b          := data (DoubleMu 2015B)      := data    := data    := 0.                   := data              := 1        := 1        := /DoubleMuon/Run2015B-PromptReco-v1/MINIAOD
+dm15br         := data (DoubleMu 2015B)      := data    := data    := 0.                   := data              := 1        := 1        := /DoubleMuon/Run2015B-PromptReco-v1/RECO
+dm15cr         := data (DoubleMu 2015C)      := data    := data    := 0.                   := data              := 1        := 1        := /DoubleMuon/Run2015C-PromptReco-v1/RECO
+dm15dr         := data (DoubleMu 2015D)      := data    := data    := 0.                   := data              := 1        := 1        := /DoubleMuon/Run2015D-PromptReco-v1/RECO
+dyph14         := DY                         := dy      := misId   := (2008.   *3.  )      := FEWZ              := := := /DYJetsToLL_M-50_13TeV-madgraph-pythia8/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
+dy100ph14      := DY (HT100-200)             := dy      := misId   := ( 194.3  *1.27)      := MCM FEWZ          := 4054159  := := /DYJetsToLL_M-50_HT-100to200_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
+dy200ph14      := DY (HT200-400)             := dy      := misId   := (  52.24 *1.27)      := MCM FEWZ          := 4666496  := := /DYJetsToLL_M-50_HT-200to400_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
+dy400ph14      := DY (HT400-600)             := dy      := misId   := (   6.546*1.27)      := MCM FEWZ          := 4931372  := := /DYJetsToLL_M-50_HT-400to600_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
+dy600ph14      := DY (HT600-Inf)             := dy      := misId   := (   2.179*1.27)      := MCM FEWZ          := 4493574  := := /DYJetsToLL_M-50_HT-600toInf_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
+eg15ar         := data (EGamma 2015A)        := data    := data    := 0.                   := data              := 1        := 1        := /EGamma/Run2015A-PromptReco-v1/RECO
+eg15br         := data (EGamma 2015B)        := data    := data    := 0.                   := data              := 1        := 1        := /EGamma/Run2015B-PromptReco-v1/RECO
+eg15cr         := data (EGamma 2015C)        := data    := data    := 0.                   := data              := 1        := 1        := /EGamma/Run2015C-PromptReco-v1/RECO
+eg15dr         := data (EGamma 2015D)        := data    := data    := 0.                   := data              := 1        := 1        := /EGamma/Run2015D-PromptReco-v1/RECO
+ep15ar         := data (Exp.Phys. 2015A)     := data    := data    := 0.                   := data              := 1        := 1        := /ExpressPhysics/Run2015A-PromptReco-v1/RECO
+ep15br         := data (Exp.Phys. 2015B)     := data    := data    := 0.                   := data              := 1        := 1        := /ExpressPhysics/Run2015B-PromptReco-v1/RECO
+ep15cr         := data (Exp.Phys. 2015C)     := data    := data    := 0.                   := data              := 1        := 1        := /ExpressPhysics/Run2015C-PromptReco-v1/RECO
+ep15dr         := data (Exp.Phys. 2015D)     := data    := data    := 0.                   := data              := 1        := 1        := /ExpressPhysics/Run2015D-PromptReco-v1/RECO
+hm15ar         := data (HighMult. 2015A)     := data    := data    := 0.                   := data              := 1        := 1        := /HighMultiplicity/Run2015A-PromptReco-v1/RECO
+hm15br         := data (HighMult. 2015B)     := data    := data    := 0.                   := data              := 1        := 1        := /HighMultiplicity/Run2015B-PromptReco-v1/RECO
+hm15cr         := data (HighMult. 2015C)     := data    := data    := 0.                   := data              := 1        := 1        := /HighMultiplicity/Run2015C-PromptReco-v1/RECO
+hm15dr         := data (HighMult. 2015D)     := data    := data    := 0.                   := data              := 1        := 1        := /HighMultiplicity/Run2015D-PromptReco-v1/RECO
+htmht15ar      := data (HTMHT 2015A)         := data    := data    := 0.                   := data              := 1        := 1        := /HTMHT/Run2015A-PromptReco-v1/RECO
+htmht15br      := data (HTMHT 2015B)         := data    := data    := 0.                   := data              := 1        := 1        := /HTMHT/Run2015B-PromptReco-v1/RECO
+htmht15cr      := data (HTMHT 2015C)         := data    := data    := 0.                   := data              := 1        := 1        := /HTMHT/Run2015C-PromptReco-v1/RECO
+htmht15dr      := data (HTMHT 2015D)         := data    := data    := 0.                   := data              := 1        := 1        := /HTMHT/Run2015D-PromptReco-v1/RECO
+j15ar          := data (Jet 2015A)           := data    := data    := 0.                   := data              := 1        := 1        := /Jet/Run2015A-PromptReco-v1/RECO
+j15br          := data (Jet 2015B)           := data    := data    := 0.                   := data              := 1        := 1        := /Jet/Run2015B-PromptReco-v1/RECO
+j15cr          := data (Jet 2015C)           := data    := data    := 0.                   := data              := 1        := 1        := /Jet/Run2015C-PromptReco-v1/RECO
+j15dr          := data (Jet 2015D)           := data    := data    := 0.                   := data              := 1        := 1        := /Jet/Run2015D-PromptReco-v1/RECO
+jht15ar        := data (JetHT 2015A)         := data    := data    := 0.                   := data              := 1        := 1        := /JetHT/Run2015A-PromptReco-v1/RECO
+jht15br        := data (JetHT 2015B)         := data    := data    := 0.                   := data              := 1        := 1        := /JetHT/Run2015B-PromptReco-v1/RECO
+jht15cr        := data (JetHT 2015C)         := data    := data    := 0.                   := data              := 1        := 1        := /JetHT/Run2015C-PromptReco-v1/RECO
+jht15dr        := data (JetHT 2015D)         := data    := data    := 0.                   := data              := 1        := 1        := /JetHT/Run2015D-PromptReco-v1/RECO
+met15ar        := data (MET 2015A)           := data    := data    := 0.                   := data              := 1        := 1        := /MET/Run2015A-PromptReco-v1/RECO
+met15br        := data (MET 2015B)           := data    := data    := 0.                   := data              := 1        := 1        := /MET/Run2015B-PromptReco-v1/RECO
+met15cr        := data (MET 2015C)           := data    := data    := 0.                   := data              := 1        := 1        := /MET/Run2015C-PromptReco-v1/RECO
+met15dr        := data (MET 2015D)           := data    := data    := 0.                   := data              := 1        := 1        := /MET/Run2015D-PromptReco-v1/RECO
+mb15ar         := data (Min.Bias 2015A)      := data    := data    := 0.                   := data              := 1        := 1        := /MinimumBias/Run2015A-PromptReco-v1/RECO
+mb15br         := data (Min.Bias 2015B)      := data    := data    := 0.                   := data              := 1        := 1        := /MinimumBias/Run2015B-PromptReco-v1/RECO
+mb15cr         := data (Min.Bias 2015C)      := data    := data    := 0.                   := data              := 1        := 1        := /MinimumBias/Run2015C-PromptReco-v1/RECO
+mb15dr         := data (Min.Bias 2015D)      := data    := data    := 0.                   := data              := 1        := 1        := /MinimumBias/Run2015D-PromptReco-v1/RECO
+meg15ar        := data (MuonEG 2015A)        := data    := data    := 0.                   := data              := 1        := 1        := /MuonEG/Run2015A-PromptReco-v1/RECO
+meg15br        := data (MuonEG 2015B)        := data    := data    := 0.                   := data              := 1        := 1        := /MuonEG/Run2015B-PromptReco-v1/RECO
+meg15cr        := data (MuonEG 2015C)        := data    := data    := 0.                   := data              := 1        := 1        := /MuonEG/Run2015C-PromptReco-v1/RECO
+meg15dr        := data (MuonEG 2015D)        := data    := data    := 0.                   := data              := 1        := 1        := /MuonEG/Run2015D-PromptReco-v1/RECO
+qcdbc15sp15    := QCDe (BC 15-20)            := qcde    := fakes   := (1272980000*0.0002)  :=                   := 907678.  := := /QCD_Pt_15to20_bcToE_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM
+qcdbc20ph14    := QCDe (BC 20-30)            := qcde    := fakes   := (6759e5*0.00075)     := MCM               := 999926.  := := /QCD_Pt_20to30_bcToE_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_PHYS14_25_V1-v2/MINIAODSIM  
+qcdbc20sp15    := QCDe (BC 20-30)            := qcde    := fakes   := (557627000*0.00059)  :=                   := 3250066. := := /QCD_Pt_20to30_bcToE_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM 
+qcdbc30ph14    := QCDe (BC 30-80)            := qcde    := fakes   := (1859e5*0.00272)     := MCM               := 1852166. := := /QCD_Pt_30to80_bcToE_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
+qcdbc30sp15    := QCDe (BC 30-80)            := qcde    := fakes   := (159068000*0.00255)  :=                   := 5092849. := := /QCD_Pt_30to80_bcToE_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v2/MINIAODSIM
+qcdbc80ph14    := QCDe (BC 80-170)           := qcde    := fakes   := (3495e3*0.01225)     := MCM               := 1000671. := := /QCD_Pt_80to170_bcToE_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_PHYS14_25_V1-v2/MINIAODSIM
+qcdbc80sp15    := QCDe (BC 80-170)           := qcde    := fakes   := (3221000*0.01183)    :=                   := 5141746. := := /QCD_Pt_80to170_bcToE_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v2/MINIAODSIM 
+qcdbc170ph14   := QCDe (BC 170-Inf)          := qcde    := fakes   := (1285e2*0.0406)      := MCM               := 1000221. := := /QCD_Pt_170toInf_bcToE_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
+qcdbc170sp15   := QCDe (BC 170-250)          := qcde    := fakes   := (105771*0.02492)     :=                   := 2882785. := := /QCD_Pt_170to250_bcToE_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM
+qcdbc250sp15   := QCDe (BC 250-Inf)          := qcde    := fakes   := (21094.1*0.03375)    :=                   := 2951115. := := /QCD_Pt_250toInf_bcToE_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v2/MINIAODSIM 
+qcdem15sp15    := QCDe (EM 15-20)            := qcde    := fakes   := (1273000000*0.0002)  :=                   :=          := := /QCD_Pt-15to20_EMEnriched_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM
+qcdem20ph14    := QCDe (EM 20-30)            := qcde    := fakes   := (6773e5*0.007)       := MCM               := 1987127. := := /QCD_Pt-20to30_EMEnriched_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_castor_PHYS14_25_V1-v2/MINIAODSIM
+qcdem20sp15    := QCDe (EM 20-30)            := qcde    := fakes   := (557600000*0.0096)   :=                   := 9175903. := := /QCD_Pt-20to30_EMEnriched_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM
+qcdem30ph14    := QCDe (EM 30-80)            := qcde    := fakes   := (1859e5*0.056)       := MCM               := 2000838. := := /QCD_Pt-30to80_EMEnriched_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_castor_PHYS14_25_V1-v1/MINIAODSIM
+qcdem30sp15    := QCDe (EM 30-50)            := qcde    := fakes   := (136000000*0.073)    :=                   := 4695884. := := /QCD_Pt-30to50_EMEnriched_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM 
+qcdem50sp15    := QCDe (EM 50-80)            := qcde    := fakes   := (19800000*0.146)     :=                   := 5226884. := := /QCD_Pt-50to80_EMEnriched_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM 
+qcdem80ph14    := QCDe (EM 80-170)           := qcde    := fakes   := (3259e3*0.158)       := MCM               := 1959507. := := /QCD_Pt-80to170_EMEnriched_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_castor_PHYS14_25_V1-v1/MINIAODSIM 
+qcdem80sp15    := QCDe (EM 80-120)           := qcde    := fakes   := (2800000*0.125)      :=                   := 8130424. := := /QCD_Pt-80to120_EMEnriched_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v3/MINIAODSIM
+qcdem120sp15   := QCDe (EM 120-170)          := qcde    := fakes   := (477000*0.132)       :=                   := 8499194. := := /QCD_Pt-120to170_EMEnriched_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM 
+qcdem170ph14   := QCDe (EM 170-Inf)          := qcde    := fakes   :=                      :=                   :=          := := 
+qcdem170sp15   := QCDe (EM 170-300)          := qcde    := fakes   := (114000*0.165)       :=                   := 5735584. := := /QCD_Pt-170to300_EMEnriched_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM
+qcdem300sp15   := QCDe (EM 300-Inf)          := qcde    := fakes   := (9000*0.15)          :=                   := 3696716. := := /QCD_Pt-300toInf_EMEnriched_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v2/MINIAODSIM 
+qcdm15ph14     := QCD#mu (Pt15)              := qcdmu   := fakes   := (866.6e6*0.00044)    := MCM               := 4777926. := := /QCD_Pt-20toInf_MuEnrichedPt15_PionKaonDecay_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_PHYS14_25_V1-v3/MINIAODSIM 
+qcdm15sp15     := QCD#mu (Pt15)              := qcdmu   := fakes   := (720.65e6*0.00042)   := MCM               := 13227150. := := /QCD_Pt-20toInf_MuEnrichedPt15_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM
+qcdm5p15sp15   := QCD#mu (Pt5/15-20)         := qcdmu   := fakes   := (1273190000*0.003*1.2)   :=                   := 2323775. := := /QCD_Pt-15to20_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM 
+qcdm5p20sp15   := QCD#mu (Pt5/20-30)         := qcdmu   := fakes   := (558528000*0.0053*1.2) :=                   := 5280099. := := /QCD_Pt-20to30_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v2/MINIAODSIM
+qcdm5p30ph14   := QCD#mu (Pt5/30-50)         := qcdmu   := fakes   := (164.3e6*0.00816)    := MCM               := 3539247. := := /QCD_Pt-30to50_MuEnrichedPt5_PionKaonDecay_Tune4C_13TeV_pythia8/Phys14DR-AVE20BX25_tsg_PHYS14_25_V3-v2/MINIAODSIM
+qcdm5p50ph14   := QCD#mu (Pt5/50-80)         := qcdmu   := fakes   := (218.1e5*0.01522)    := MCM               := 2805150. := := /QCD_Pt-50to80_MuEnrichedPt5_PionKaonDecay_Tune4C_13TeV_pythia8/Phys14DR-AVE20BX25_tsg_PHYS14_25_V3-v1/MINIAODSIM
+qcdm5p80ph14   := QCD#mu (Pt5/80-120)        := qcdmu   := fakes   := (3.e6   *0.02424)    := MCM               := 1907265. := := /QCD_Pt-80to120_MuEnrichedPt5_PionKaonDecay_Tune4C_13TeV_pythia8/Phys14DR-AVE20BX25_tsg_PHYS14_25_V3-v1/MINIAODSIM
+#qcdm5p30ph14  := QCD#mu (Pt5/30-50)         := qcdmu   := fakes   := (164.4e6*0.0122*1.2) := MCM               := 3539247. := := /QCD_Pt-30to50_MuEnrichedPt5_PionKaonDecay_Tune4C_13TeV_pythia8/Phys14DR-AVE20BX25_tsg_PHYS14_25_V3-v2/MINIAODSIM
+#qcdm5p50ph14  := QCD#mu (Pt5/50-80)         := qcdmu   := fakes   := (219.3e5*0.0218*1.2) := MCM               := 2805150. := := /QCD_Pt-50to80_MuEnrichedPt5_PionKaonDecay_Tune4C_13TeV_pythia8/Phys14DR-AVE20BX25_tsg_PHYS14_25_V3-v1/MINIAODSIM
+#qcdm5p80ph14  := QCD#mu (Pt5/80-120)        := qcdmu   := fakes   := (3.e6   *0.0395*1.2) := MCM               := 1907265. := := /QCD_Pt-80to120_MuEnrichedPt5_PionKaonDecay_Tune4C_13TeV_pythia8/Phys14DR-AVE20BX25_tsg_PHYS14_25_V3-v1/MINIAODSIM
+qcdm5p30sp15   := QCD#mu (Pt5/30-50)         := qcdmu   := fakes   := (139803000*0.01182*1.2)  :=                   := 4963639. := := /QCD_Pt-30to50_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM
+qcdm5p50sp15   := QCD#mu (Pt5/50-80)         := qcdmu   := fakes   := (19222500*0.02276*1.2)   :=                   := 5065826. := := /QCD_Pt-50to80_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM
+qcdm5p80sp15   := QCD#mu (Pt5/80-120)        := qcdmu   := fakes   := (2758420*0.03844*1.2)    :=                   := 3883236. := := /QCD_Pt-80to120_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM
+qcdm5p120sp15  := QCD#mu (Pt5/120-170)       := qcdmu   := fakes   := (469797*0.05362*1.2)     :=                   := 4020757. := := /QCD_Pt-120to170_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v2/MINIAODSIM
+qcdm5p170sp15  := QCD#mu (Pt5/170-300)       := qcdmu   := fakes   := (117989*0.07335*1.2)     :=                   := 3948326. := := /QCD_Pt-170to300_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v2/MINIAODSIM
+qcdm5p300sp15  := QCD#mu (Pt5/300-470)       := qcdmu   := fakes   := (7820.25*0.10196*1.2)    :=                   := 3927883. := := /QCD_Pt-300to470_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v2/MINIAODSIM
+qcdm5p470sp15  := QCD#mu (Pt5/470-600)       := qcdmu   := fakes   := (645.528*0.12242*1.2)    :=                   := 1990045. := := /QCD_Pt-470to600_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v2/MINIAODSIM
+qcdm5p600sp15  := QCD#mu (Pt5/600-800)       := qcdmu   := fakes   := (187.109*0.13412*1.2)    :=                   := 1982667. := := /QCD_Pt-600to800_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v2/MINIAODSIM
+qcdm5p800sp15  := QCD#mu (Pt5/800-1000)      := qcdmu   := fakes   := (2.3486*0.14552*1.2)     :=                   := 1990869. := := /QCD_Pt-800to1000_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v2/MINIAODSIM
+qcdm5p1000sp15 := QCD#mu (Pt5/1000-Inf)      := qcdmu   := fakes   := (10.4305*0.15544*1.2)    :=                   := 1963183. := := /QCD_Pt-1000toInf_MuEnrichedPt5_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v2/MINIAODSIM
+se15ar         := data (SingleEl 2015A)      := data    := data    := 0.                   := data              := 1        := 1        := /SingleElectron/Run2015A-PromptReco-v1/RECO
+se15br         := data (SingleEl 2015B)      := data    := data    := 0.                   := data              := 1        := 1        := /SingleElectron/Run2015B-PromptReco-v1/RECO
+se15cr         := data (SingleEl 2015C)      := data    := data    := 0.                   := data              := 1        := 1        := /SingleElectron/Run2015C-PromptReco-v1/RECO
+se15dr         := data (SingleEl 2015D)      := data    := data    := 0.                   := data              := 1        := 1        := /SingleElectron/Run2015D-PromptReco-v1/RECO
+sm15ar         := data (SingleMu 2015A)      := data    := data    := 0.                   := data              := 1        := 1        := /SingleMuon/Run2015A-PromptReco-v1/RECO
+sm15br         := data (SingleMu 2015B)      := data    := data    := 0.                   := data              := 1        := 1        := /SingleMuon/Run2015B-PromptReco-v1/RECO
+sm15cr         := data (SingleMu 2015C)      := data    := data    := 0.                   := data              := 1        := 1        := /SingleMuon/Run2015C-PromptReco-v1/RECO
+sm15dr         := data (SingleMu 2015D)      := data    := data    := 0.                   := data              := 1        := 1        := /SingleMuon/Run2015D-PromptReco-v1/RECO
+sp15ar         := data (SinglePh 2015A)      := data    := data    := 0.                   := data              := 1        := 1        := /SinglePhoton/Run2015A-PromptReco-v1/RECO
+sp15br         := data (SinglePh 2015B)      := data    := data    := 0.                   := data              := 1        := 1        := /SinglePhoton/Run2015B-PromptReco-v1/RECO
+sp15cr         := data (SinglePh 2015C)      := data    := data    := 0.                   := data              := 1        := 1        := /SinglePhoton/Run2015C-PromptReco-v1/RECO
+sp15dr         := data (SinglePh 2015D)      := data    := data    := 0.                   := data              := 1        := 1        := /SinglePhoton/Run2015D-PromptReco-v1/RECO
+t15ar          := data (Tau 2015D)           := data    := data    := 0.                   := data              := 1        := 1        := /Tau/Run2015A-PromptReco-v1/RECO
+t15br          := data (Tau 2015D)           := data    := data    := 0.                   := data              := 1        := 1        := /Tau/Run2015B-PromptReco-v1/RECO
+t15cr          := data (Tau 2015D)           := data    := data    := 0.                   := data              := 1        := 1        := /Tau/Run2015C-PromptReco-v1/RECO
+t15dr          := data (Tau 2015D)           := data    := data    := 0.                   := data              := 1        := 1        := /Tau/Run2015D-PromptReco-v1/RECO
 
-dyph14       := DY                       := dy      := misId   := (2008.   *3.  )      := FEWZ              := := := /DYJetsToLL_M-50_13TeV-madgraph-pythia8/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
-dy100ph14    := DY (HT100-200)           := dy      := misId   := ( 194.3  *1.27)      := MCM FEWZ          := 4054159  := := /DYJetsToLL_M-50_HT-100to200_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
-dy200ph14    := DY (HT200-400)           := dy      := misId   := (  52.24 *1.27)      := MCM FEWZ          := 4666496  := := /DYJetsToLL_M-50_HT-200to400_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
-dy400ph14    := DY (HT400-600)           := dy      := misId   := (   6.546*1.27)      := MCM FEWZ          := 4931372  := := /DYJetsToLL_M-50_HT-400to600_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
-dy600ph14    := DY (HT600-Inf)           := dy      := misId   := (   2.179*1.27)      := MCM FEWZ          := 4493574  := := /DYJetsToLL_M-50_HT-600toInf_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
-eg15ar       := data (e#gamma 2015A)     := data    := data    := 0.                   := data              := 1          := 1  := /EGamma/Run2015A-PromptReco-v1/RECO
-j15ar        := data (jet 2015A)         := data    := data    := 0.                   := data              := 1          := 1  := /Jet/Run2015A-PromptReco-v1/RECO
-qcdbc20ph14  := QCDe (BC 20-30)          := qcde    := fakes   := (6759e5*0.00075)     := MCM               := 999926.  := := /QCD_Pt_20to30_bcToE_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_PHYS14_25_V1-v2/MINIAODSIM  
-qcdbc30ph14  := QCDe (BC 30-80)          := qcde    := fakes   := (1859e5*0.00272)     := MCM               := 1852166. := := /QCD_Pt_30to80_bcToE_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
-qcdbc80ph14  := QCDe (BC 80-170)         := qcde    := fakes   := (3495e3*0.01225)     := MCM               := 1000671. := := /QCD_Pt_80to170_bcToE_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_PHYS14_25_V1-v2/MINIAODSIM
-qcdbc170ph14 := QCDe (BC 170-Inf)        := qcde    := fakes   := (1285e2*0.0406)      := MCM               := 1000221. := := /QCD_Pt_170toInf_bcToE_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
-qcdem20ph14  := QCDe (EM 20-30)          := qcde    := fakes   := (6773e5*0.007)       := MCM               := 1987127. := := /QCD_Pt-20to30_EMEnriched_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_castor_PHYS14_25_V1-v2/MINIAODSIM
-qcdem30ph14  := QCDe (EM 30-80)          := qcde    := fakes   := (1859e5*0.056)       := MCM               := 2000838. := := /QCD_Pt-30to80_EMEnriched_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_castor_PHYS14_25_V1-v1/MINIAODSIM
-qcdem80ph14  := QCDe (EM 80-170)         := qcde    := fakes   := (3259e3*0.158)       := MCM               := 1959507. := := /QCD_Pt-80to170_EMEnriched_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_castor_PHYS14_25_V1-v1/MINIAODSIM 
-qcdem170ph14 := QCDe (EM 170-Inf)        := qcde    := fakes   := 
-qcdm15ph14   := QCD#mu (Pt15)            := qcdmu   := fakes   := (866.6e6*0.00044)    := MCM               := 4777926. := := /QCD_Pt-20toInf_MuEnrichedPt15_PionKaonDecay_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_PHYS14_25_V1-v3/MINIAODSIM 
-qcdm5p30ph14 := QCD#mu (Pt5/30-50)       := qcdmu   := fakes   := (164.3e6*0.00816)    := MCM               := 3539247. := := /QCD_Pt-30to50_MuEnrichedPt5_PionKaonDecay_Tune4C_13TeV_pythia8/Phys14DR-AVE20BX25_tsg_PHYS14_25_V3-v2/MINIAODSIM
-qcdm5p50ph14 := QCD#mu (Pt5/50-80)       := qcdmu   := fakes   := (218.1e5*0.01522)    := MCM               := 2805150. := := /QCD_Pt-50to80_MuEnrichedPt5_PionKaonDecay_Tune4C_13TeV_pythia8/Phys14DR-AVE20BX25_tsg_PHYS14_25_V3-v1/MINIAODSIM
-qcdm5p80ph14 := QCD#mu (Pt5/80-120)      := qcdmu   := fakes   := (3.e6   *0.02424)    := MCM               := 1907265. := := /QCD_Pt-80to120_MuEnrichedPt5_PionKaonDecay_Tune4C_13TeV_pythia8/Phys14DR-AVE20BX25_tsg_PHYS14_25_V3-v1/MINIAODSIM
-#qcdm5p30ph14 := QCD#mu (Pt5/30-50)       := qcdmu   := fakes   := (164.4e6*0.0122*1.2) := MCM               := 3539247. := := /QCD_Pt-30to50_MuEnrichedPt5_PionKaonDecay_Tune4C_13TeV_pythia8/Phys14DR-AVE20BX25_tsg_PHYS14_25_V3-v2/MINIAODSIM
-#qcdm5p50ph14 := QCD#mu (Pt5/50-80)       := qcdmu   := fakes   := (219.3e5*0.0218*1.2) := MCM               := 2805150. := := /QCD_Pt-50to80_MuEnrichedPt5_PionKaonDecay_Tune4C_13TeV_pythia8/Phys14DR-AVE20BX25_tsg_PHYS14_25_V3-v1/MINIAODSIM
-#qcdm5p80ph14 := QCD#mu (Pt5/80-120)      := qcdmu   := fakes   := (3.e6   *0.0395*1.2) := MCM               := 1907265. := := /QCD_Pt-80to120_MuEnrichedPt5_PionKaonDecay_Tune4C_13TeV_pythia8/Phys14DR-AVE20BX25_tsg_PHYS14_25_V3-v1/MINIAODSIM
-sm15ar       := data (single #mu 2015A)   := data    := data    := 0.                  := data              := 1        := 1        := /SingleMu/Run2015A-PromptReco-v1/RECO 
-tbschph14    := #bar{t} (sch)            := t       := fakes   := 0.44928              := LHC Top XSec      :=
-tbtchph14    := #bar{t} (tch)            := t       := fakes   := 8.74476              := LHC Top XSec      :=
-tschph14     := t (sch)                  := t       := fakes   := 0.7776               := LHC Top XSec      :=
-ttchph14     := t (tch)                  := t       := fakes   := 14.6934              := LHC Top XSec      :=
-tbwph14      := #bar{t}W                 := tw      := fakes   := 35.6                 := LHC Top XSec      :=
-twph14       := tW                       := tw      := fakes   := 35.6                 := LHC Top XSec      :=
-ttph14       := t#bar{t}                 := tt      := fakes   := 809.1                := MCFM              := 25446993 := 25446993 := /TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
-tthph14      := t#bar{t}H                := tth     := rares   := 0.5085               := LHC Higgs XSec WG := := := /TTbarH_M-125_13TeV_amcatnlo-pythia8-tauola/Phys14DR-PU20bx25_tsg_PHYS14_25_V1-v2/MINIAODSIM
-ttwph14      := t#bar{t}W                := ttw     := rares   := 0.6647               := MG5_aMC@NLO       := 246521 := := /TTWJets_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
-ttzph14      := t#bar{t}Z                := ttz     := rares   := 0.8565               := MG5_aMC@NLO       := 249275 := := /TTZJets_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
-wph14        := W                        := w       := fakes   := 20508.9              := FEWZ              :=  :=  := /WJetsToLNu_13TeV-madgraph-pythia8-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
-w100ph14     := W (HT100-200)            := w       := fakes   := (1817.0 *1.23)       := MCM FEWZ          := 5262265 := := /WJetsToLNu_HT-100to200_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM 
-w200ph14     := W (HT200-400)            := w       := fakes   := ( 471.6 *1.23)       := MCM FEWZ          := 4936077 := := /WJetsToLNu_HT-200to400_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
-w400ph14     := W (HT400-600)            := w       := fakes   := (  55.61*1.23)       := MCM FEWZ          := 4640594 := := /WJetsToLNu_HT-400to600_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
-w600ph14     := W (HT600-Inf)            := w       := fakes   := (  18.81*1.23)       := MCM FEWZ          := 237484  := := /WJetsToLNu_HT-600toInf_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
-wzph14       := WZ                       := wz      := rares   := 2.29                 := NLO MCFM          := 237484 := := /WZJetsTo3LNu_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
-zb15ar       := data (zero bias 2015A)   := data    := data    := 0.                   := data              := 1          := 1  := /ZeroBias1/Run2015A-PromptReco-v1/RECO
-zb115ar      := data (zero bias 1 2015A) := data    := data    := 0.                   := data              := 1          := 1  := /ZeroBias1/Run2015A-PromptReco-v1/RECO
-zb215ar      := data (zero bias 2 2015A) := data    := data    := 0.                   := data              := 1          := 1  := /ZeroBias2/Run2015A-PromptReco-v1/RECO
-zb315ar      := data (zero bias 3 2015A) := data    := data    := 0.                   := data              := 1          := 1  := /ZeroBias3/Run2015A-PromptReco-v1/RECO
-zb415ar      := data (zero bias 4 2015A) := data    := data    := 0.                   := data              := 1          := 1  := /ZeroBias4/Run2015A-PromptReco-v1/RECO
-zb515ar      := data (zero bias 5 2015A) := data    := data    := 0.                   := data              := 1          := 1  := /ZeroBias5/Run2015A-PromptReco-v1/RECO
-zb615ar      := data (zero bias 6 2015A) := data    := data    := 0.                   := data              := 1          := 1  := /ZeroBias6/Run2015A-PromptReco-v1/RECO
-zb715ar      := data (zero bias 7 2015A) := data    := data    := 0.                   := data              := 1          := 1  := /ZeroBias7/Run2015A-PromptReco-v1/RECO
-zb815ar      := data (zero bias 8 2015A) := data    := data    := 0.                   := data              := 1          := 1  := /ZeroBias8/Run2015A-PromptReco-v1/RECO
+t1tttt12sp15   := T1tttt (1.2/0.8)               := signal := signal := 0.                 := signal            := 1        := 1        := /T1tttt_mGo1200_mChi800/
+t1tttt15sp15   := T1tttt (1.5/1.0)               := signal := signal := 0.                 := signal            := 1        := 1        := /T1tttt_mGo1500_mChi100/
+t5tttt280sp15  := T5ttttDeg (1.0/0.3/0.28)       := signal := signal := 0.                 := signal            := 1        := 1        := /T5ttttDeg_mGo1000_mStop300_mChi280_4bodydec/
+t5tttt285sp15  := T5ttttDeg (1.0/0.3/0.285/0.28) := signal := signal := 0.                 := signal            := 1        := 1        := /T5ttttDeg_mGo1000_mStop300_mCh285_mChi280_23bodydec/
+t6ttww600sp15  := T6ttWW (0.6/0.425/0.05)        := signal := signal := 0.                 := signal            := 1        := 1        := /T6ttWW_600_425_50/
+t6ttww650sp15  := T6ttWW (0.65/0.15/0.05)        := signal := signal := 0.                 := signal            := 1        := 1        := /T6ttWW_650_150_50/
+
+tbschph14      := #bar{t} (sch)              := t       := fakes   := 0.44928              := LHC Top XSec      :=
+tbtchph14      := #bar{t} (tch)              := t       := fakes   := 8.74476              := LHC Top XSec      :=
+tschph14       := t (sch)                    := t       := fakes   := 0.7776               := LHC Top XSec      :=
+ttchph14       := t (tch)                    := t       := fakes   := 14.6934              := LHC Top XSec      :=
+tbwph14        := #bar{t}W                   := tw      := fakes   := 35.6                 := LHC Top XSec      :=
+twph14         := tW                         := tw      := fakes   := 35.6                 := LHC Top XSec      :=
+ttph14         := t#bar{t}                   := tt      := fakes   := 809.1                := MCFM              := 25446993 := 25446993 := /TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
+tthph14        := t#bar{t}H                  := tth     := rares   := 0.5085               := LHC Higgs XSec WG := := := /TTbarH_M-125_13TeV_amcatnlo-pythia8-tauola/Phys14DR-PU20bx25_tsg_PHYS14_25_V1-v2/MINIAODSIM
+ttwph14        := t#bar{t}W                  := ttw     := rares   := 0.6647               := MG5_aMC@NLO       := 246521 := := /TTWJets_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
+ttzph14        := t#bar{t}Z                  := ttz     := rares   := 0.8565               := MG5_aMC@NLO       := 249275 := := /TTZJets_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
+wph14          := W                          := w       := fakes   := 20508.9              := FEWZ              :=  :=  := /WJetsToLNu_13TeV-madgraph-pythia8-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
+w100ph14       := W (HT100-200)              := w       := fakes   := (1817.0 *1.23)       := MCM FEWZ          := 5262265 := := /WJetsToLNu_HT-100to200_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM 
+w200ph14       := W (HT200-400)              := w       := fakes   := ( 471.6 *1.23)       := MCM FEWZ          := 4936077 := := /WJetsToLNu_HT-200to400_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
+w400ph14       := W (HT400-600)              := w       := fakes   := (  55.61*1.23)       := MCM FEWZ          := 4640594 := := /WJetsToLNu_HT-400to600_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
+w600ph14       := W (HT600-Inf)              := w       := fakes   := (  18.81*1.23)       := MCM FEWZ          := 237484  := := /WJetsToLNu_HT-600toInf_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
+wzph14         := WZ                         := wz      := rares   := 2.29                 := NLO MCFM          := 237484 := := /WZJetsTo3LNu_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM
+zb15ar         := data (ZeroBias 2015A)      := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias/Run2015A-PromptReco-v1/RECO
+zb15br         := data (ZeroBias 2015B)      := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias/Run2015B-PromptReco-v1/RECO
+zb15cr         := data (ZeroBias 2015C)      := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias/Run2015C-PromptReco-v1/RECO
+zb15dr         := data (ZeroBias 2015D)      := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias/Run2015D-PromptReco-v1/RECO
+zb115ar        := data (ZeroBias1 2015A)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias1/Run2015A-PromptReco-v1/RECO
+zb115br        := data (ZeroBias1 2015B)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias1/Run2015B-PromptReco-v1/RECO
+zb115cr        := data (ZeroBias1 2015C)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias1/Run2015C-PromptReco-v1/RECO
+zb115dr        := data (ZeroBias1 2015D)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias1/Run2015D-PromptReco-v1/RECO
+zb215ar        := data (ZeroBias2 2015A)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias2/Run2015A-PromptReco-v1/RECO
+zb215br        := data (ZeroBias2 2015B)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias2/Run2015B-PromptReco-v1/RECO
+zb215cr        := data (ZeroBias2 2015C)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias2/Run2015C-PromptReco-v1/RECO
+zb215dr        := data (ZeroBias2 2015D)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias2/Run2015D-PromptReco-v1/RECO
+zb315ar        := data (ZeroBias3 2015A)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias3/Run2015A-PromptReco-v1/RECO
+zb315br        := data (ZeroBias3 2015B)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias3/Run2015B-PromptReco-v1/RECO
+zb315cr        := data (ZeroBias3 2015C)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias3/Run2015C-PromptReco-v1/RECO
+zb315dr        := data (ZeroBias3 2015D)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias3/Run2015D-PromptReco-v1/RECO
+zb415ar        := data (ZeroBias4 2015A)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias4/Run2015A-PromptReco-v1/RECO
+zb415br        := data (ZeroBias4 2015B)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias4/Run2015B-PromptReco-v1/RECO
+zb415cr        := data (ZeroBias4 2015C)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias4/Run2015C-PromptReco-v1/RECO
+zb415dr        := data (ZeroBias4 2015D)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias4/Run2015D-PromptReco-v1/RECO
+zb515ar        := data (ZeroBias5 2015A)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias5/Run2015A-PromptReco-v1/RECO
+zb515br        := data (ZeroBias5 2015B)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias5/Run2015B-PromptReco-v1/RECO
+zb515cr        := data (ZeroBias5 2015C)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias5/Run2015C-PromptReco-v1/RECO
+zb515dr        := data (ZeroBias5 2015D)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias5/Run2015D-PromptReco-v1/RECO
+zb615ar        := data (ZeroBias6 2015A)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias6/Run2015A-PromptReco-v1/RECO
+zb615br        := data (ZeroBias6 2015B)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias6/Run2015B-PromptReco-v1/RECO
+zb615cr        := data (ZeroBias6 2015C)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias6/Run2015C-PromptReco-v1/RECO
+zb615dr        := data (ZeroBias6 2015D)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias6/Run2015D-PromptReco-v1/RECO
+zb715ar        := data (ZeroBias7 2015A)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias7/Run2015A-PromptReco-v1/RECO
+zb715br        := data (ZeroBias7 2015B)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias7/Run2015B-PromptReco-v1/RECO
+zb715cr        := data (ZeroBias7 2015C)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias7/Run2015C-PromptReco-v1/RECO
+zb715dr        := data (ZeroBias7 2015D)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias7/Run2015D-PromptReco-v1/RECO
+zb815ar        := data (ZeroBias8 2015A)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias8/Run2015A-PromptReco-v1/RECO
+zb815br        := data (ZeroBias8 2015B)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias8/Run2015B-PromptReco-v1/RECO
+zb815cr        := data (ZeroBias8 2015C)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias8/Run2015C-PromptReco-v1/RECO
+zb815dr        := data (ZeroBias8 2015D)     := data    := data    := 0.                   := data              := 1        := 1        := /ZeroBias8/Run2015D-PromptReco-v1/RECO
