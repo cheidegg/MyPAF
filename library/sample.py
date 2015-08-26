@@ -10,7 +10,7 @@
 #################################################################
 
 import ROOT
-import mypaf
+import cfg, input, lib, mypaf
 
 
 ## sample
@@ -35,17 +35,19 @@ class sample:
 
 	## __init__
 	##--------------------------------------------------------------- 
-	def __init__(self, mypaf, name, path, treename = "tree"):
+	def __init__(self, mypaf, name, definition, treename = "tree", dirname = ""):
 
 		self.mypaf = mypaf
 		self.db    = mypaf.db
 		self.vb    = mypaf.vb
 		self.vb.call("sample", "__init__", [self, mypaf, name, path, treename], "Initializing the sample class.")
 
-		if path[0] != "/" and path.find("dcap://") == -1 and path.find("root://") == -1: path = mypaf.inputpath + path
+		self.paths = [lib.usePath(self.mypaf.inputpath, self.mypaf.input.cfg.getVar("inputdir"), p, dirname) for p in definition.split()]
+
+		#if path[0] != "/" and path.find("dcap://") == -1 and path.find("root://") == -1: path = mypaf.inputpath + path
 
 		self.name = name
-		self.path = path
+		#self.path = path
 		self.treename = treename
 		
 		#self.load()
@@ -72,6 +74,10 @@ class sample:
 		## loads and opens the TFile and TTree
 
 		self.vb.call("sample", "load", [self], "Loading the file and the tree.")
+
+		#self.tree     = ROOT.TChain(self.treename)
+		#for p in self.paths:
+		#	self.tree.Add(p)
 
 		self.file     = ROOT.TFile.Open(self.path, "read")
 		if self.file: self.vb.talk("Successfully opened TFile " + self.path + ".", 1)
